@@ -57,7 +57,7 @@
           <% entries_by_date = profile_entries.index_by { |e| e.work_date } %>
           <tr class="hover:bg-gray-50/60 transition-colors">
             <td class="px-5 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">
-              <%= member.full_name %>
+              <%= member.company_membership.display_name %>
             </td>
             <% @days.each do |day| %>
               <% entry = entries_by_date[day] %>
