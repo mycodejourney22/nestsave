@@ -1,0 +1,114 @@
+<h1 style="margin:0 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:22px;
+            font-weight:bold;color:#111827;line-height:1.2;">
+  Advance repayment deducted
+</h1>
+<p style="margin:0 0 20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;
+           color:#374151;line-height:1.6;">
+  Hi <%= @user.full_name.split.first %>,
+  instalment <strong><%= @schedule.instalment_number %> of <%= @advance.repayment_months %></strong>
+  has been deducted from your salary this payroll cycle.
+</p>
+
+<!-- Amount highlight -->
+<table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation"
+       style="background-color:#f3faf7;border-radius:8px;margin:0 0 20px;">
+  <tr>
+    <td style="padding:18px 24px;text-align:center;">
+      <p style="margin:0 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:13px;
+                 color:#1D9E75;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">
+        This instalment
+      </p>
+      <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:32px;
+                 font-weight:bold;color:#1D9E75;">
+        <%= formatted_currency(@schedule.amount) %>
+      </p>
+    </td>
+  </tr>
+</table>
+
+<!-- Repayment details -->
+<table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation"
+       style="border:1px solid #e5e7eb;border-radius:6px;margin:0 0 20px;">
+  <tr>
+    <td style="padding:12px 16px;border-bottom:1px solid #f3f4f6;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
+        <tr>
+          <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#6b7280;">
+            Instalment
+          </td>
+          <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:600;
+                     color:#111827;text-align:right;">
+            <%= @schedule.instalment_number %> of <%= @advance.repayment_months %>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr>
+    <td style="padding:12px 16px;border-bottom:1px solid #f3f4f6;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
+        <tr>
+          <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#6b7280;">
+            Amount deducted
+          </td>
+          <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;
+                     color:#111827;text-align:right;">
+            <%= formatted_currency(@schedule.amount) %>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <% remaining = @advance.repayment_months - @schedule.instalment_number %>
+  <tr>
+    <td style="padding:12px 16px;<%= @next ? 'border-bottom:1px solid #f3f4f6;' : '' %>">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
+        <tr>
+          <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#6b7280;">
+            Remaining instalments
+          </td>
+          <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:600;
+                     color:#111827;text-align:right;">
+            <%= remaining %>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <% if @next %>
+    <tr>
+      <td style="padding:12px 16px;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
+          <tr>
+            <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#6b7280;">
+              Next repayment
+            </td>
+            <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:600;
+                       color:#111827;text-align:right;">
+              <%= formatted_date(@next.due_date) %>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  <% end %>
+</table>
+
+<p style="margin:0 0 28px;font-family:Arial,Helvetica,sans-serif;font-size:14px;
+           color:#374151;line-height:1.5;">
+  Repayments continue to be deducted automatically each payroll cycle.
+</p>
+
+<!-- CTA -->
+<table cellpadding="0" cellspacing="0" border="0" role="presentation">
+  <tr>
+    <td style="border-radius:6px;background-color:#1D9E75;" class="btn-td">
+      <a href="<%= @advance_url %>"
+         style="display:inline-block;padding:12px 24px;font-family:Arial,Helvetica,sans-serif;
+                font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;
+                border-radius:6px;line-height:1.2;">
+        View advance details &rarr;
+      </a>
+    </td>
+  </tr>
+</table>

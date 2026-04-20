@@ -1,0 +1,18 @@
+ACTION REQUIRED — SALARY ADVANCE REQUEST
+
+<%= @employee.full_name %> (<%= @employee.email %>) has applied for a salary advance.
+
+ADVANCE DETAILS
+───────────────
+Amount requested:  <%= formatted_currency(@advance.amount) %>
+Repayment period:  <%= @advance.repayment_months %> months
+Monthly instalment: <%= formatted_currency(@advance.monthly_instalment) %>
+<% if @advance.reason.present? %>Reason:            <%= @advance.reason %>
+<% end %>
+This employee has no existing open advance and is eligible to apply.
+
+Review this advance:
+<%= @review_url %>
+
+Or view your dashboard:
+<%= @dashboard_url %>

@@ -1,0 +1,39 @@
+<%# Admin — Disburse Salary Advance (modal) %>
+
+<turbo-frame id="modal">
+  <div class="p-6">
+    <div class="flex items-start justify-between mb-5">
+      <div>
+        <h2 class="text-lg font-semibold text-gray-900">Mark as Disbursed</h2>
+        <p class="text-sm text-gray-500 mt-0.5">
+          <%= @advance.user.full_name %> &mdash; <%= gbp(@advance.amount) %>
+        </p>
+      </div>
+      <button data-action="modal#close"
+              class="text-gray-400 hover:text-gray-600 transition-colors p-1 -mr-1 rounded-lg hover:bg-gray-100">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="bg-teal-50 border border-teal-100 rounded-xl px-4 py-3 mb-5">
+      <p class="text-sm text-teal-700">
+        Confirm that <%= gbp(@advance.amount) %> has been transferred to <%= @advance.user.full_name %>.
+        Repayment deductions will begin from next payroll.
+      </p>
+    </div>
+
+    <%= form_with url: disburse_admin_salary_advance_path(@current_company.slug, @advance),
+          method: :patch do |f| %>
+      <div class="flex gap-3">
+        <%= f.submit "Confirm disbursement",
+              class: "flex-1 bg-teal-500 hover:bg-teal-600 text-white font-semibold px-4 py-2.5 rounded-xl text-sm transition-colors cursor-pointer text-center" %>
+        <button type="button" data-action="modal#close"
+                class="px-4 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors">
+          Cancel
+        </button>
+      </div>
+    <% end %>
+  </div>
+</turbo-frame>

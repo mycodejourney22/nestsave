@@ -1,0 +1,11 @@
+:queues:
+  - payroll
+  - scheduler
+  - mailers
+  - default
+
+:schedule:
+  schedule_month_end_jobs:
+    cron: "0 6 * * *"
+    class: ScheduleMonthEndJobsJob
+    queue: scheduler

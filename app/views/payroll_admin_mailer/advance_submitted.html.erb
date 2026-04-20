@@ -1,0 +1,103 @@
+<!-- Action label -->
+<p style="margin:0 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:13px;
+           font-weight:600;color:#f59e0b;letter-spacing:0.5px;text-transform:uppercase;">
+  Action required
+</p>
+<h1 style="margin:0 0 24px;font-family:Georgia,'Times New Roman',serif;font-size:22px;
+            font-weight:bold;color:#111827;line-height:1.2;">
+  Salary advance request from <%= @employee.full_name %>
+</h1>
+
+<!-- Employee block -->
+<table cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin:0 0 20px;">
+  <tr>
+    <td style="width:44px;height:44px;border-radius:22px;background-color:#E1F5EE;
+               text-align:center;vertical-align:middle;" width="44" height="44">
+      <span style="font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;
+                   color:#1D9E75;"><%= initials(@employee.full_name) %></span>
+    </td>
+    <td style="padding-left:12px;vertical-align:middle;">
+      <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:15px;
+                 font-weight:700;color:#111827;"><%= @employee.full_name %></p>
+      <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:13px;
+                 color:#6b7280;"><%= @employee.email %></p>
+    </td>
+  </tr>
+</table>
+
+<!-- Advance details -->
+<table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation"
+       style="background-color:#f3faf7;border-left:3px solid #1D9E75;border-radius:0 6px 6px 0;
+              margin:0 0 20px;">
+  <tr>
+    <td style="padding:16px 20px;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
+        <tr>
+          <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#6b7280;
+                     padding-bottom:8px;width:40%;">Amount requested</td>
+          <td style="font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:700;
+                     color:#1D9E75;padding-bottom:8px;"><%= formatted_currency(@advance.amount) %></td>
+        </tr>
+        <tr>
+          <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#6b7280;
+                     padding-bottom:8px;">Repayment period</td>
+          <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:600;
+                     color:#111827;padding-bottom:8px;"><%= @advance.repayment_months %> months</td>
+        </tr>
+        <tr>
+          <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#6b7280;
+                     padding-bottom:8px;">Monthly instalment</td>
+          <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:600;
+                     color:#111827;padding-bottom:8px;"><%= formatted_currency(@advance.monthly_instalment) %></td>
+        </tr>
+        <% if @advance.reason.present? %>
+          <tr>
+            <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#6b7280;">Reason</td>
+            <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:600;
+                       color:#111827;"><%= @advance.reason %></td>
+          </tr>
+        <% end %>
+      </table>
+    </td>
+  </tr>
+</table>
+
+<!-- Eligibility note -->
+<table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation"
+       style="background-color:#fefce8;border:1px solid #fde68a;border-radius:6px;margin:0 0 28px;">
+  <tr>
+    <td style="padding:12px 16px;">
+      <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:13px;
+                 color:#92400e;line-height:1.5;">
+        &#9432; This employee has no existing open advance and is eligible to apply.
+      </p>
+    </td>
+  </tr>
+</table>
+
+<!-- CTA buttons -->
+<table cellpadding="0" cellspacing="0" border="0" role="presentation">
+  <tr>
+    <td style="padding-right:10px;">
+      <table cellpadding="0" cellspacing="0" border="0" role="presentation">
+        <tr>
+          <td style="border-radius:6px;background-color:#1D9E75;" class="btn-td">
+            <a href="<%= @review_url %>"
+               style="display:inline-block;padding:12px 24px;font-family:Arial,Helvetica,sans-serif;
+                      font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;
+                      border-radius:6px;line-height:1.2;">
+              Review advance &rarr;
+            </a>
+          </td>
+        </tr>
+      </table>
+    </td>
+    <td style="vertical-align:middle;padding-top:4px;">
+      <a href="<%= @dashboard_url %>"
+         style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1D9E75;
+                text-decoration:none;font-weight:600;">
+        View dashboard
+      </a>
+    </td>
+  </tr>
+</table>

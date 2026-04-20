@@ -1,0 +1,80 @@
+<%# Employee — Request Withdrawal %>
+
+<div class="max-w-lg">
+  <%# Breadcrumb %>
+  <div class="flex items-center gap-2 text-sm text-gray-400 mb-7">
+    <%= link_to "Savings Plans", employee_savings_plans_path(@current_company.slug),
+          class: "hover:text-gray-600 transition-colors" %>
+    <span>/</span>
+    <%= link_to @plan.name, employee_savings_plan_path(@current_company.slug, @plan),
+          class: "hover:text-gray-600 transition-colors" %>
+    <span>/</span>
+    <span class="text-gray-700 font-medium">Withdraw</span>
+  </div>
+
+  <h1 class="text-2xl font-semibold text-gray-900 mb-2">Request Withdrawal</h1>
+  <p class="text-sm text-gray-500 mb-8">
+    Submit a withdrawal request from your savings plan. Your payroll manager will review it.
+  </p>
+
+  <%# Plan summary %>
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">From plan</p>
+        <p class="text-base font-semibold text-gray-900"><%= @plan.name %></p>
+      </div>
+      <div class="text-right">
+        <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Available balance</p>
+        <p class="text-xl font-bold text-primary-600"><%= gbp(@plan.total_saved) %></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+    <%= form_with model: @request,
+          url: employee_savings_plan_withdrawal_requests_path(@current_company.slug, @plan),
+          method: :post do |f| %>
+
+      <% if @request.errors.any? %>
+        <div class="mb-5 rounded-xl bg-red-50 border border-red-200 px-4 py-3">
+          <p class="text-sm font-semibold text-red-700 mb-1">Please fix the following:</p>
+          <ul class="list-disc list-inside space-y-0.5">
+            <% @request.errors.full_messages.each do |msg| %>
+              <li class="text-sm text-red-600"><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class="space-y-5">
+        <div>
+          <%= f.label :amount, "Amount to withdraw", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">£</span>
+            <%= f.number_field :amount,
+                  min: 0.01, max: @plan.total_saved, step: "0.01",
+                  placeholder: "0.00",
+                  class: "block w-full rounded-lg border border-gray-300 pl-7 pr-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition" %>
+          </div>
+          <p class="text-xs text-gray-400 mt-1.5">Maximum: <%= gbp(@plan.total_saved) %></p>
+        </div>
+
+        <div>
+          <%= f.label :reason, "Reason", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <%= f.text_area :reason,
+                rows: 3,
+                placeholder: "Why are you making this withdrawal?",
+                class: "block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition resize-none" %>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 mt-6">
+        <%= f.submit "Submit request",
+              class: "bg-primary-500 hover:bg-primary-600 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors cursor-pointer" %>
+        <%= link_to "Cancel", employee_savings_plan_path(@current_company.slug, @plan),
+              class: "text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors px-2 py-2" %>
+      </div>
+    <% end %>
+  </div>
+</div>

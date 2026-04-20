@@ -1,0 +1,14 @@
+ADVANCE FULLY REPAID ✓
+
+Congratulations, <%= @user.full_name.split.first %>!
+
+You've fully repaid your salary advance of <%= formatted_currency(@advance.amount) %>.
+No further deductions will be made.
+
+Total repaid: <%= formatted_currency(@advance.amount) %>
+Repaid over:  <%= @advance.repayment_months %> months
+
+You're now eligible to apply for a new advance if you need one in the future.
+
+View your account:
+<%= @advances_url %>

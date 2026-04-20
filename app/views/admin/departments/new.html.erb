@@ -1,0 +1,20 @@
+<%# Admin — New Department %>
+
+<div class="max-w-lg">
+  <div class="flex items-center gap-2 text-sm text-gray-400 mb-7">
+    <%= link_to "Departments", admin_departments_path(@current_company.slug),
+          class: "hover:text-gray-600 transition-colors" %>
+    <span>/</span>
+    <span class="text-gray-700 font-medium">New department</span>
+  </div>
+
+  <h1 class="text-2xl font-semibold text-gray-900 mb-8">New Department</h1>
+
+  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+    <%= form_with model: @department,
+          url: admin_departments_path(@current_company.slug),
+          method: :post do |f| %>
+      <%= render "form", f: f %>
+    <% end %>
+  </div>
+</div>

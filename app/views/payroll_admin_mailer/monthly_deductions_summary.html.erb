@@ -1,0 +1,103 @@
+<!-- Header -->
+<p style="margin:0 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:13px;
+           font-weight:600;color:#1D9E75;letter-spacing:0.5px;text-transform:uppercase;">
+  Payroll summary
+</p>
+<h1 style="margin:0 0 6px;font-family:Georgia,'Times New Roman',serif;font-size:22px;
+            font-weight:bold;color:#111827;line-height:1.2;">
+  <%= @company.name %>
+</h1>
+<p style="margin:0 0 28px;font-family:Arial,Helvetica,sans-serif;font-size:15px;color:#6b7280;">
+  Deductions summary for <strong style="color:#374151;"><%= @period %></strong>
+</p>
+
+<!-- Summary table -->
+<table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation"
+       style="border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;margin:0 0 28px;">
+  <!-- Table header -->
+  <tr style="background-color:#f9fafb;">
+    <td style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;
+               color:#9ca3af;letter-spacing:0.6px;text-transform:uppercase;
+               padding:10px 16px;border-bottom:1px solid #e5e7eb;">
+      Category
+    </td>
+    <td style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;
+               color:#9ca3af;letter-spacing:0.6px;text-transform:uppercase;
+               padding:10px 16px;border-bottom:1px solid #e5e7eb;text-align:right;">
+      Amount
+    </td>
+  </tr>
+  <tr>
+    <td style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#374151;
+               padding:12px 16px;border-bottom:1px solid #f3f4f6;">
+      Employees saving
+    </td>
+    <td style="font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:600;
+               color:#111827;padding:12px 16px;border-bottom:1px solid #f3f4f6;text-align:right;">
+      <%= @summary[:active_savers] %>
+    </td>
+  </tr>
+  <tr style="background-color:#fafafa;">
+    <td style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#374151;
+               padding:12px 16px;border-bottom:1px solid #f3f4f6;">
+      Total savings to deduct
+    </td>
+    <td style="font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:600;
+               color:#111827;padding:12px 16px;border-bottom:1px solid #f3f4f6;text-align:right;">
+      <%= formatted_currency(@summary[:savings_total]) %>
+    </td>
+  </tr>
+  <tr>
+    <td style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#374151;
+               padding:12px 16px;border-bottom:1px solid #f3f4f6;">
+      Advance repayments
+    </td>
+    <td style="font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:600;
+               color:#111827;padding:12px 16px;border-bottom:1px solid #f3f4f6;text-align:right;">
+      <%= formatted_currency(@summary[:advance_repayments]) %>
+    </td>
+  </tr>
+  <!-- Total row -->
+  <tr style="background-color:#f3faf7;">
+    <td style="font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:700;
+               color:#111827;padding:14px 16px;border-top:2px solid #1D9E75;">
+      Net payroll adjustment
+    </td>
+    <td style="font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:700;
+               color:#1D9E75;padding:14px 16px;border-top:2px solid #1D9E75;text-align:right;">
+      <%= formatted_currency(@summary[:savings_total].to_f + @summary[:advance_repayments].to_f) %>
+    </td>
+  </tr>
+</table>
+
+<p style="margin:0 0 24px;font-family:Arial,Helvetica,sans-serif;font-size:14px;
+           color:#374151;line-height:1.5;">
+  Apply these deductions to your payroll run for <%= @period %>.
+</p>
+
+<!-- Buttons -->
+<table cellpadding="0" cellspacing="0" border="0" role="presentation">
+  <tr>
+    <td style="padding-right:12px;">
+      <table cellpadding="0" cellspacing="0" border="0" role="presentation">
+        <tr>
+          <td style="border-radius:6px;background-color:#1D9E75;" class="btn-td">
+            <a href="<%= @dashboard_url %>"
+               style="display:inline-block;padding:12px 24px;font-family:Arial,Helvetica,sans-serif;
+                      font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;
+                      border-radius:6px;line-height:1.2;">
+              View full breakdown &rarr;
+            </a>
+          </td>
+        </tr>
+      </table>
+    </td>
+    <td style="vertical-align:middle;padding-top:4px;">
+      <a href="<%= @dashboard_url %>"
+         style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#1D9E75;
+                text-decoration:none;font-weight:600;">
+        Download CSV
+      </a>
+    </td>
+  </tr>
+</table>

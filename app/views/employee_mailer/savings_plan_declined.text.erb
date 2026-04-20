@@ -1,0 +1,12 @@
+UPDATE ON YOUR SAVINGS PLAN
+
+Hi <%= @user.full_name.split.first %>,
+
+Unfortunately your savings plan "<%= @plan.name %>" was not approved at this time.
+<% if @note.present? %>
+Note from your payroll manager:
+"<%= @note %>"
+<% end %>
+
+You're welcome to submit a new plan with adjusted details:
+<%= @new_url %>

@@ -1,0 +1,88 @@
+<%# Admin — Record Salary Change %>
+
+<div class="max-w-lg">
+  <div class="flex items-center gap-2 text-sm text-gray-400 mb-7">
+    <%= link_to "Employees", admin_employee_profiles_path(@current_company.slug),
+          class: "hover:text-gray-600 transition-colors" %>
+    <span>/</span>
+    <%= link_to @profile.user.full_name,
+          admin_employee_profile_path(@current_company.slug, @profile, tab: "salary_history"),
+          class: "hover:text-gray-600 transition-colors" %>
+    <span>/</span>
+    <span class="text-gray-700 font-medium">Record salary change</span>
+  </div>
+
+  <h1 class="text-2xl font-semibold text-gray-900 mb-2">Record Salary Change</h1>
+  <p class="text-sm text-gray-500 mb-8">
+    This creates an immutable salary history entry. It cannot be edited or deleted.
+  </p>
+
+  <%# Current salary reference %>
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-6 flex items-center justify-between">
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Current salary</p>
+      <p class="text-2xl font-bold text-gray-900">
+        <%= @profile.current_salary ? gbp(@profile.current_salary) : "Not set" %>
+      </p>
+    </div>
+    <div class="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center">
+      <svg class="w-5 h-5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+    <%= form_with model: @salary_history,
+          url: admin_employee_profile_salary_histories_path(@current_company.slug, @profile),
+          method: :post do |f| %>
+
+      <div class="space-y-5">
+        <div>
+          <%= f.label :amount, "New salary amount (£)", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">£</span>
+            <%= f.number_field :amount,
+                  min: 0.01, step: "0.01",
+                  placeholder: "4500.00",
+                  class: "block w-full rounded-lg border border-gray-300 pl-7 pr-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition" %>
+          </div>
+        </div>
+
+        <div>
+          <%= f.label :effective_date, "Effective date", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <%= f.date_field :effective_date,
+                class: "block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition" %>
+        </div>
+
+        <div>
+          <%= f.label :reason, "Reason", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <%= f.select :reason,
+                [
+                  ["Starting salary", "Starting salary"],
+                  ["Annual review", "Annual review"],
+                  ["Promotion", "Promotion"],
+                  ["Market adjustment", "Market adjustment"],
+                  ["Other", "Other"]
+                ],
+                { include_blank: "Select a reason…" },
+                class: "block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition bg-white" %>
+        </div>
+
+        <div>
+          <%= f.label :notes, "Notes (optional)", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <%= f.text_area :notes,
+                rows: 3,
+                placeholder: "Additional context…",
+                class: "block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition resize-none" %>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 mt-6">
+        <%= f.submit "Record salary change",
+              class: "bg-primary-500 hover:bg-primary-600 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors cursor-pointer" %>
+        <%= link_to "Cancel",
+              admin_employee_profile_path(@current_company.slug, @profile, tab: "salary_history"),
+              class: "text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors px-2 py-2" %>
+      </div>
+    <% end %>
+  </div>
+</div>

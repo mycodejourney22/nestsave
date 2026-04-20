@@ -1,0 +1,13 @@
+UPDATE ON YOUR WITHDRAWAL REQUEST
+
+Hi <%= @user.full_name.split.first %>,
+
+Your withdrawal request of <%= formatted_currency(@request.amount) %> from "<%= @plan.name %>" was not approved at this time.
+<% if @note.present? %>
+Note from your payroll manager:
+"<%= @note %>"
+<% end %>
+Your savings remain in your account.
+
+View your savings:
+<%= @plans_url %>

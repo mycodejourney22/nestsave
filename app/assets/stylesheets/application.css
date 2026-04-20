@@ -1,0 +1,13 @@
+/* NestSave — base styles (Tailwind CDN handles utilities) */
+[data-turbo-frame] { display: block; }
+
+/* Smooth page transitions */
+html { scroll-behavior: smooth; }
+
+/* Remove default button / input focus ring (Tailwind ring takes over) */
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+}

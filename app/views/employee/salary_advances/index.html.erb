@@ -1,0 +1,71 @@
+<%# Employee — Salary Advances Index %>
+
+<div class="flex items-center justify-between mb-7">
+  <div>
+    <h1 class="text-2xl font-semibold text-gray-900">Salary Advances</h1>
+    <p class="text-gray-500 text-sm mt-1">Advance up to one month's salary, repaid in instalments</p>
+  </div>
+  <% unless @advances.any? { |a| %w[pending approved disbursed repaying].include?(a.status) } %>
+    <%= link_to new_employee_salary_advance_path(@current_company.slug),
+          class: "inline-flex items-center gap-1.5 bg-primary-500 hover:bg-primary-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm" do %>
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+      Apply for advance
+    <% end %>
+  <% end %>
+</div>
+
+<% if @advances.empty? %>
+  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col items-center justify-center py-20 text-center px-8">
+    <div class="w-14 h-14 rounded-2xl bg-primary-50 flex items-center justify-center mb-4">
+      <svg class="w-7 h-7 text-primary-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/></svg>
+    </div>
+    <p class="text-base font-semibold text-gray-900 mb-1">No salary advances yet</p>
+    <p class="text-sm text-gray-400 mb-6 max-w-xs">Apply for an advance of up to your monthly salary, repaid over 1–6 months via payroll.</p>
+    <%= link_to "Apply for an advance", new_employee_salary_advance_path(@current_company.slug),
+          class: "inline-flex items-center gap-1.5 bg-primary-500 hover:bg-primary-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors" %>
+  </div>
+<% else %>
+  <div class="space-y-4">
+    <% @advances.each do |advance| %>
+      <%= link_to employee_salary_advance_path(@current_company.slug, advance),
+            class: "block bg-white rounded-xl border border-gray-200 shadow-sm hover:border-primary-300 hover:shadow-md transition-all p-5 group" do %>
+        <div class="flex items-start justify-between gap-4 mb-3">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <p class="text-base font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
+                <%= gbp(advance.amount) %> advance
+              </p>
+              <%= status_badge(advance.status) %>
+            </div>
+            <p class="text-xs text-gray-400">
+              Applied <%= advance.applied_at.strftime("%d %b %Y") %>
+              <% if advance.disbursed_at %>
+                &middot; Disbursed <%= advance.disbursed_at.strftime("%d %b %Y") %>
+              <% end %>
+            </p>
+          </div>
+          <div class="text-right flex-shrink-0">
+            <p class="text-sm font-semibold text-gray-900"><%= gbp(advance.monthly_instalment) %>/mo</p>
+            <p class="text-xs text-gray-400"><%= advance.repayment_months %> instalments</p>
+          </div>
+        </div>
+
+        <% if %w[disbursed repaying].include?(advance.status) %>
+          <% repaid = advance.amount_repaid %>
+          <% pct = advance.amount.positive? ? (repaid / advance.amount * 100).round(1) : 0 %>
+          <div class="mb-2">
+            <div class="flex items-center justify-between text-xs text-gray-500 mb-1.5">
+              <span><%= gbp(repaid) %> repaid</span>
+              <span><%= gbp(advance.amount_outstanding) %> remaining</span>
+            </div>
+            <div class="w-full bg-gray-100 rounded-full h-1.5">
+              <div class="bg-indigo-500 h-1.5 rounded-full" style="width: <%= pct %>%"></div>
+            </div>
+          </div>
+        <% end %>
+
+        <p class="text-sm text-gray-500 line-clamp-1"><%= advance.reason %></p>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

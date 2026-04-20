@@ -1,0 +1,85 @@
+<%# Admin — Edit Reference %>
+
+<div class="max-w-lg">
+  <div class="flex items-center gap-2 text-sm text-gray-400 mb-7">
+    <%= link_to @profile.user.full_name,
+          admin_employee_profile_path(@current_company.slug, @profile, tab: "references"),
+          class: "hover:text-gray-600 transition-colors" %>
+    <span>/</span>
+    <span class="text-gray-700 font-medium">Edit reference</span>
+  </div>
+
+  <h1 class="text-2xl font-semibold text-gray-900 mb-8">Edit Reference</h1>
+
+  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+    <%= form_with model: @reference,
+          url: admin_employee_profile_employee_reference_path(@current_company.slug, @profile, @reference),
+          method: :patch do |f| %>
+
+      <div class="space-y-4">
+        <div>
+          <%= f.label :referee_name, "Referee name", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <%= f.text_field :referee_name,
+                class: "block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition" %>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <%= f.label :organisation, "Organisation (optional)", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+            <%= f.text_field :organisation,
+                  class: "block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition" %>
+          </div>
+          <div>
+            <%= f.label :relationship, "Relationship", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+            <%= f.text_field :relationship,
+                  class: "block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition" %>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <%= f.label :email, "Email (optional)", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+            <%= f.email_field :email,
+                  class: "block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition" %>
+          </div>
+          <div>
+            <%= f.label :phone, "Phone (optional)", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+            <%= f.telephone_field :phone,
+                  class: "block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition" %>
+          </div>
+        </div>
+        <div>
+          <%= f.label :status, "Status", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <%= f.select :status,
+                [["Not requested", "not_requested"], ["Requested", "requested"],
+                 ["Received", "received"], ["Waived", "waived"]],
+                {},
+                class: "block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition bg-white" %>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <%= f.label :requested_on, "Requested on", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+            <%= f.date_field :requested_on,
+                  class: "block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition" %>
+          </div>
+          <div>
+            <%= f.label :received_on, "Received on", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+            <%= f.date_field :received_on,
+                  class: "block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition" %>
+          </div>
+        </div>
+        <div>
+          <%= f.label :notes, "Notes (optional)", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <%= f.text_area :notes, rows: 3,
+                class: "block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition resize-none" %>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 mt-6">
+        <%= f.submit "Save changes",
+              class: "bg-primary-500 hover:bg-primary-600 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors cursor-pointer" %>
+        <%= link_to "Cancel",
+              admin_employee_profile_path(@current_company.slug, @profile, tab: "references"),
+              class: "text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors px-2 py-2" %>
+      </div>
+    <% end %>
+  </div>
+</div>

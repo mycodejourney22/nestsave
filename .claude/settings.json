@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bin/rails generate:*)",
+      "Bash(ruby -c /home/az/nestsave/db/seeds.rb)",
+      "Bash(bin/rails restart *)",
+      "Bash(rails routes *)"
+    ]
+  }
+}

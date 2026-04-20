@@ -1,0 +1,155 @@
+<%# Registration — Create your company %>
+
+<div class="w-full max-w-xl mx-auto">
+  <%# Logo %>
+  <div class="text-center mb-8">
+    <div class="inline-flex items-center gap-2 mb-6">
+      <div class="w-10 h-10 rounded-xl bg-primary-500 flex items-center justify-center">
+        <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75"/>
+        </svg>
+      </div>
+      <span class="text-2xl font-bold text-white tracking-tight">NestSave</span>
+    </div>
+    <h1 class="text-2xl font-bold text-white mb-1">Set up your company</h1>
+    <p class="text-white/60 text-sm">Create your account and get started in minutes</p>
+  </div>
+
+  <div class="bg-white rounded-2xl shadow-2xl p-8"
+       data-controller="slug-generator currency-selector">
+
+    <%= render "shared/flash" %>
+
+    <%= form_with url: registrations_path, local: false, data: { turbo: false } do |f| %>
+
+      <%# ── Company details ─────────────────────────────────────────────── %>
+      <div class="mb-7">
+        <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+          <span class="w-5 h-5 rounded-full bg-primary-100 text-primary-600 text-xs flex items-center justify-center font-bold">1</span>
+          Company details
+        </h2>
+
+        <div class="space-y-4">
+          <div>
+            <%= label_tag "company_name", "Company name", class: "block text-sm font-medium text-gray-700 mb-1" %>
+            <%= text_field_tag "company[name]",
+                  @company.name,
+                  placeholder: "Acme Technologies Ltd",
+                  autocomplete: "organization",
+                  data: { "slug-generator-target": "source", action: "input->slug-generator#generate" },
+                  class: "block w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none" %>
+          </div>
+
+          <div>
+            <%= label_tag "company_slug", "Company URL slug", class: "block text-sm font-medium text-gray-700 mb-1" %>
+            <div class="flex rounded-xl border border-gray-300 overflow-hidden focus-within:border-primary-500 focus-within:ring-1 focus-within:ring-primary-500">
+              <span class="px-3.5 py-2.5 bg-gray-50 border-r border-gray-300 text-xs text-gray-400 font-mono flex items-center flex-shrink-0">nestsave.co/</span>
+              <%= text_field_tag "company[slug]",
+                    @company.slug,
+                    placeholder: "acme-technologies",
+                    data: { "slug-generator-target": "output" },
+                    class: "flex-1 px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 outline-none bg-white" %>
+            </div>
+            <p class="text-xs text-gray-400 mt-1">Lowercase letters, numbers and hyphens only. Cannot be changed later.</p>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <%= label_tag "company_country", "Country", class: "block text-sm font-medium text-gray-700 mb-1" %>
+              <%= select_tag "company[country]",
+                    options_for_select(COUNTRIES_WITH_CURRENCY.map { |c| c[:country] }, @company.country),
+                    include_blank: "Select country…",
+                    data: { "currency-selector-target": "country", action: "change->currency-selector#select" },
+                    class: "block w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none bg-white" %>
+            </div>
+            <div>
+              <%= label_tag "company_currency", "Currency", class: "block text-sm font-medium text-gray-700 mb-1" %>
+              <div class="relative">
+                <div class="block w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-sm text-gray-500 bg-gray-50 flex items-center">
+                  <span data-currency-selector-target="currencyDisplay"><%= @company.currency.present? ? "#{@company.currency} (#{@company.currency_symbol})" : "Auto-detected" %></span>
+                </div>
+                <%= hidden_field_tag "company[currency]",       @company.currency,        data: { "currency-selector-target": "currency" } %>
+                <%= hidden_field_tag "company[currency_symbol]", @company.currency_symbol, data: { "currency-selector-target": "currencySymbol" } %>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <%= label_tag "company_payroll_email", "Payroll email", class: "block text-sm font-medium text-gray-700 mb-1" %>
+              <%= email_field_tag "company[payroll_email]",
+                    @company.payroll_email,
+                    placeholder: "payroll@acme.co.uk",
+                    class: "block w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none" %>
+            </div>
+            <div>
+              <%= label_tag "company_payroll_day", "Payroll day", class: "block text-sm font-medium text-gray-700 mb-1" %>
+              <%= select_tag "company[payroll_day]",
+                    options_for_select((1..28).map { |d| ["#{d.ordinalize} of each month", d] }, @company.payroll_day || 25),
+                    class: "block w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none bg-white" %>
+            </div>
+          </div>
+
+          <%= hidden_field_tag "company[timezone]", "London" %>
+        </div>
+      </div>
+
+      <div class="h-px bg-gray-100 mb-7"></div>
+
+      <%# ── Your account ─────────────────────────────────────────────────── %>
+      <div class="mb-7">
+        <h2 class="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+          <span class="w-5 h-5 rounded-full bg-primary-100 text-primary-600 text-xs flex items-center justify-center font-bold">2</span>
+          Your account
+        </h2>
+
+        <div class="space-y-4">
+          <div>
+            <%= label_tag "user_full_name", "Full name", class: "block text-sm font-medium text-gray-700 mb-1" %>
+            <%= text_field_tag "user[full_name]",
+                  @user.full_name,
+                  placeholder: "Hannah Moore",
+                  autocomplete: "name",
+                  class: "block w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none" %>
+          </div>
+
+          <div>
+            <%= label_tag "user_email", "Work email address", class: "block text-sm font-medium text-gray-700 mb-1" %>
+            <%= email_field_tag "user[email]",
+                  @user.email,
+                  placeholder: "you@company.com",
+                  autocomplete: "email",
+                  class: "block w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none" %>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <%= label_tag "user_password", "Password", class: "block text-sm font-medium text-gray-700 mb-1" %>
+              <%= password_field_tag "user[password]",
+                    nil,
+                    autocomplete: "new-password",
+                    placeholder: "Min. 8 characters",
+                    class: "block w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none" %>
+            </div>
+            <div>
+              <%= label_tag "user_password_confirmation", "Confirm password", class: "block text-sm font-medium text-gray-700 mb-1" %>
+              <%= password_field_tag "user[password_confirmation]",
+                    nil,
+                    autocomplete: "new-password",
+                    class: "block w-full rounded-xl border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 outline-none" %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <%= submit_tag "Create company & sign in",
+            class: "w-full bg-primary-500 hover:bg-primary-600 text-white font-semibold py-3 px-6 rounded-xl text-sm transition-colors cursor-pointer" %>
+
+    <% end %>
+
+    <p class="text-center text-xs text-gray-400 mt-5">
+      Already have an account?
+      <%= link_to "Sign in", new_user_session_path, class: "text-primary-600 hover:text-primary-700 font-medium" %>
+    </p>
+  </div>
+</div>

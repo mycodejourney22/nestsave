@@ -1,0 +1,93 @@
+<!-- Headline -->
+<p style="margin:0 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:13px;
+           font-weight:600;color:#1D9E75;letter-spacing:0.5px;text-transform:uppercase;">
+  Invitation sent
+</p>
+<h1 style="margin:0 0 20px;font-family:Georgia,'Times New Roman',serif;font-size:22px;
+            font-weight:bold;color:#111827;line-height:1.2;">
+  You've invited <%= @invited_name %> to NestSave
+</h1>
+
+<p style="margin:0 0 20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;
+           color:#374151;line-height:1.6;">
+  An invitation has been sent to <strong><%= @invited_name %></strong>
+  (<%= @invited_email %>) to join <strong><%= @company.name %></strong> on NestSave.
+  They'll receive a separate email with a link to set up their account.
+</p>
+
+<!-- Details box -->
+<table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation"
+       style="background-color:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;margin:0 0 28px;">
+  <tr>
+    <td style="padding:16px 20px;">
+      <p style="margin:0 0 10px;font-family:Arial,Helvetica,sans-serif;font-size:11px;
+                 font-weight:700;color:#9ca3af;letter-spacing:0.6px;text-transform:uppercase;">
+        Employee details
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
+        <tr>
+          <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#6b7280;
+                     padding-bottom:7px;width:38%;">Full name</td>
+          <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:600;
+                     color:#111827;padding-bottom:7px;"><%= @invited_name %></td>
+        </tr>
+        <tr>
+          <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#6b7280;
+                     padding-bottom:7px;">Email</td>
+          <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:600;
+                     color:#111827;padding-bottom:7px;"><%= @invited_email %></td>
+        </tr>
+        <% if @profile&.job_title.present? %>
+          <tr>
+            <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#6b7280;
+                       padding-bottom:7px;">Job title</td>
+            <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:600;
+                       color:#111827;padding-bottom:7px;"><%= @profile.job_title %></td>
+          </tr>
+        <% end %>
+        <% if @profile&.department.present? %>
+          <tr>
+            <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#6b7280;
+                       padding-bottom:7px;">Department</td>
+            <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:600;
+                       color:#111827;padding-bottom:7px;"><%= @profile.department %></td>
+          </tr>
+        <% end %>
+        <% if @profile&.current_salary.present? %>
+          <tr>
+            <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#6b7280;
+                       padding-bottom:7px;">Starting salary</td>
+            <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:600;
+                       color:#111827;padding-bottom:7px;"><%= formatted_currency(@profile.current_salary) %>/mo</td>
+          </tr>
+        <% end %>
+        <% if @profile&.employment_type.present? %>
+          <tr>
+            <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#6b7280;">Employment type</td>
+            <td style="font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:600;
+                       color:#111827;"><%= @profile.employment_type_label %></td>
+          </tr>
+        <% end %>
+      </table>
+    </td>
+  </tr>
+</table>
+
+<p style="margin:0 0 20px;font-family:Arial,Helvetica,sans-serif;font-size:14px;
+           color:#6b7280;line-height:1.5;">
+  The invitation link expires in 48 hours. If they don't accept in time, you can resend it from the team members page.
+</p>
+
+<!-- CTA -->
+<table cellpadding="0" cellspacing="0" border="0" role="presentation">
+  <tr>
+    <td style="border-radius:6px;background-color:#1D9E75;" class="btn-td">
+      <a href="<%= @team_url %>"
+         style="display:inline-block;padding:12px 24px;font-family:Arial,Helvetica,sans-serif;
+                font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;
+                border-radius:6px;line-height:1.2;">
+        View team members &rarr;
+      </a>
+    </td>
+  </tr>
+</table>

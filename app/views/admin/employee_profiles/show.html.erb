@@ -1,0 +1,608 @@
+<%# Admin — Employee Profile Show %>
+<% active_tab = params[:tab] || "overview" %>
+
+<%# Pending invite banner %>
+<% if @pending_invite %>
+  <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-start gap-3 mb-6">
+    <svg class="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+    <div>
+      <p class="text-sm font-semibold text-amber-800">Invitation pending</p>
+      <p class="text-xs text-amber-700 mt-0.5">
+        This employee has been invited but has not yet accepted.
+        Invite sent to <strong><%= @display_email %></strong>
+        <% if @membership.invitation_sent_at %>
+          on <%= @membership.invitation_sent_at.strftime("%d %b %Y") %>.
+        <% end %>
+        Some profile fields will be editable once they accept.
+      </p>
+    </div>
+  </div>
+<% end %>
+
+<%# Breadcrumb %>
+<div class="flex items-center gap-2 text-sm text-gray-400 mb-6">
+  <%= link_to "Employees", admin_employee_profiles_path(@current_company.slug),
+        class: "hover:text-gray-600 transition-colors" %>
+  <span>/</span>
+  <span class="text-gray-700 font-medium"><%= @display_name %></span>
+</div>
+
+<%# Profile header %>
+<div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
+  <div class="flex items-start gap-5">
+    <div class="w-16 h-16 rounded-2xl <%= @pending_invite ? "bg-amber-100" : "bg-primary-100" %> flex items-center justify-center flex-shrink-0">
+      <span class="<%= @pending_invite ? "text-amber-600" : "text-primary-600" %> text-xl font-bold">
+        <%= @display_initials %>
+      </span>
+    </div>
+    <div class="flex-1 min-w-0">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h1 class="text-xl font-bold text-gray-900">
+            <%= @profile.preferred_name.presence || @display_name %>
+            <% if @profile.preferred_name.present? %>
+              <span class="text-sm font-normal text-gray-400">(<%= @display_name %>)</span>
+            <% end %>
+          </h1>
+          <p class="text-sm text-gray-500 mt-0.5">
+            <%= @profile.job_title.presence || "No job title" %>
+            <% if @profile.department.present? %>
+              &middot; <%= @profile.department %>
+            <% end %>
+          </p>
+          <div class="flex items-center gap-2 mt-2 flex-wrap">
+            <span class="text-xs text-gray-400 font-mono bg-gray-100 px-2 py-0.5 rounded"><%= @profile.employee_number %></span>
+            <%= status_badge(@profile.company_membership.status) %>
+            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset bg-blue-50 text-blue-700 ring-blue-600/20">
+              <%= @profile.employment_type.humanize %>
+            </span>
+          </div>
+        </div>
+        <%= link_to "Edit profile",
+              edit_admin_employee_profile_path(@current_company.slug, @profile),
+              class: "inline-flex items-center gap-1.5 bg-white border border-gray-200 hover:border-gray-300 text-gray-700 px-3.5 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm flex-shrink-0" %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%# Tab navigation %>
+<div class="border-b border-gray-200 mb-6">
+  <nav class="flex gap-0 -mb-px overflow-x-auto">
+    <% tabs = [
+      ["overview",         "Overview"],
+      ["work_history",     "Work history"],
+      ["salary_history",   "Salary history"],
+      ["documents",        "Documents"],
+      ["bank_details",     "Bank details"],
+      ["references",       "References"],
+      ["savings_advances", "Savings & advances"],
+    ] %>
+    <% tabs.each do |key, label| %>
+      <%= link_to admin_employee_profile_path(@current_company.slug, @profile, tab: key),
+            class: "whitespace-nowrap px-4 py-3 text-sm font-medium border-b-2 transition-colors #{active_tab == key ? "border-primary-500 text-primary-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"}" do %>
+        <%= label %>
+      <% end %>
+    <% end %>
+  </nav>
+</div>
+
+<%# Tab content %>
+<% if active_tab == "overview" %>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <%# Left column %>
+    <div class="lg:col-span-2 space-y-6">
+
+      <%# Personal details %>
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+        <h2 class="text-sm font-semibold text-gray-900 mb-4">Personal details</h2>
+        <dl class="grid grid-cols-2 gap-x-6 gap-y-4">
+          <div>
+            <dt class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-0.5">Full name</dt>
+            <dd class="text-sm font-medium text-gray-900"><%= @display_name %></dd>
+          </div>
+          <div>
+            <dt class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-0.5">Preferred name</dt>
+            <dd class="text-sm font-medium text-gray-900"><%= @profile.preferred_name.presence || "—" %></dd>
+          </div>
+          <div>
+            <dt class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-0.5">Work email</dt>
+            <dd class="text-sm font-medium text-gray-900"><%= @display_email %></dd>
+          </div>
+          <div>
+            <dt class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-0.5">Personal email</dt>
+            <dd class="text-sm font-medium text-gray-900"><%= @profile.personal_email.presence || "—" %></dd>
+          </div>
+          <div>
+            <dt class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-0.5">Phone</dt>
+            <dd class="text-sm font-medium text-gray-900"><%= @profile.phone.presence || "—" %></dd>
+          </div>
+          <div>
+            <dt class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-0.5">Date of birth</dt>
+            <dd class="text-sm font-medium text-gray-900"><%= @profile.date_of_birth&.strftime("%d %b %Y") || "—" %></dd>
+          </div>
+          <div>
+            <dt class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-0.5">Gender</dt>
+            <dd class="text-sm font-medium text-gray-900"><%= @profile.gender.presence || "—" %></dd>
+          </div>
+          <div>
+            <dt class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-0.5">Nationality</dt>
+            <dd class="text-sm font-medium text-gray-900"><%= @profile.nationality.presence || "—" %></dd>
+          </div>
+        </dl>
+      </div>
+
+      <%# Employment details %>
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+        <h2 class="text-sm font-semibold text-gray-900 mb-4">Employment</h2>
+        <dl class="grid grid-cols-2 gap-x-6 gap-y-4">
+          <div>
+            <dt class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-0.5">Job title</dt>
+            <dd class="text-sm font-medium text-gray-900"><%= @profile.job_title.presence || "—" %></dd>
+          </div>
+          <div>
+            <dt class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-0.5">Department</dt>
+            <dd class="text-sm font-medium text-gray-900"><%= @profile.department&.name || "—" %></dd>
+          </div>
+          <div>
+            <dt class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-0.5">Employment type</dt>
+            <dd class="text-sm font-medium text-gray-900"><%= @profile.employment_type.humanize %></dd>
+          </div>
+          <div>
+            <dt class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-0.5">Current salary</dt>
+            <dd class="text-sm font-semibold text-gray-900">
+              <%= @profile.current_salary ? gbp(@profile.current_salary) : "Not set" %>
+            </dd>
+          </div>
+          <div>
+            <dt class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-0.5">Start date</dt>
+            <dd class="text-sm font-medium text-gray-900"><%= @profile.employment_start_date.strftime("%d %b %Y") %></dd>
+          </div>
+          <div>
+            <dt class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-0.5">End date</dt>
+            <dd class="text-sm font-medium text-gray-900"><%= @profile.employment_end_date&.strftime("%d %b %Y") || "—" %></dd>
+          </div>
+          <div>
+            <dt class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-0.5">Right to work</dt>
+            <dd class="text-sm font-medium text-gray-900"><%= @profile.right_to_work_status.presence || "—" %></dd>
+          </div>
+          <div>
+            <dt class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-0.5">RTW expiry</dt>
+            <dd class="text-sm font-medium text-gray-900"><%= @profile.right_to_work_expiry&.strftime("%d %b %Y") || "—" %></dd>
+          </div>
+        </dl>
+      </div>
+
+      <%# Address %>
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+        <h2 class="text-sm font-semibold text-gray-900 mb-4">Address</h2>
+        <% if [@profile.address_line_1, @profile.city, @profile.postcode].any?(&:present?) %>
+          <address class="not-italic text-sm text-gray-700 space-y-0.5">
+            <% [@profile.address_line_1, @profile.address_line_2, @profile.city,
+                @profile.postcode, @profile.country].each do |line| %>
+              <% next if line.blank? %>
+              <p><%= line %></p>
+            <% end %>
+          </address>
+        <% else %>
+          <p class="text-sm text-gray-400">No address on file.</p>
+        <% end %>
+      </div>
+    </div>
+
+    <%# Right column %>
+    <div class="space-y-6">
+
+      <%# Emergency contact %>
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-semibold text-gray-900">Emergency contact</h2>
+          <%= link_to "+ Add",
+                new_admin_employee_profile_emergency_contact_path(@current_company.slug, @profile),
+                class: "text-xs font-medium text-primary-600 hover:text-primary-700" %>
+        </div>
+        <% primary = @emergency_contacts.find(&:primary?) || @emergency_contacts.first %>
+        <% if primary %>
+          <div>
+            <p class="text-sm font-semibold text-gray-900"><%= primary.full_name %></p>
+            <p class="text-xs text-gray-500"><%= primary.relationship %></p>
+            <p class="text-xs text-gray-500 mt-1"><%= primary.phone %></p>
+            <% if primary.email.present? %>
+              <p class="text-xs text-gray-400"><%= primary.email %></p>
+            <% end %>
+          </div>
+          <% if @emergency_contacts.size > 1 %>
+            <p class="text-xs text-gray-400 mt-2">+<%= @emergency_contacts.size - 1 %> more</p>
+          <% end %>
+        <% else %>
+          <p class="text-sm text-gray-400">None on file.</p>
+        <% end %>
+      </div>
+
+      <%# Quick links %>
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+        <h2 class="text-sm font-semibold text-gray-900 mb-3">Quick actions</h2>
+        <div class="space-y-1.5">
+          <%= link_to admin_employee_profile_path(@current_company.slug, @profile, tab: "salary_history"),
+                class: "flex items-center gap-2.5 text-sm text-gray-600 hover:text-primary-600 py-1.5 transition-colors" do %>
+            <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Salary history
+          <% end %>
+          <%= link_to new_admin_employee_profile_salary_history_path(@current_company.slug, @profile),
+                class: "flex items-center gap-2.5 text-sm text-gray-600 hover:text-primary-600 py-1.5 transition-colors" do %>
+            <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+            Record salary change
+          <% end %>
+          <%= link_to new_admin_employee_profile_document_path(@current_company.slug, @profile),
+                class: "flex items-center gap-2.5 text-sm text-gray-600 hover:text-primary-600 py-1.5 transition-colors" do %>
+            <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+            Add document
+          <% end %>
+          <%= link_to new_admin_employee_profile_bank_detail_path(@current_company.slug, @profile),
+                class: "flex items-center gap-2.5 text-sm text-gray-600 hover:text-primary-600 py-1.5 transition-colors" do %>
+            <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/></svg>
+            Update bank details
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<% elsif active_tab == "salary_history" %>
+  <div class="flex items-center justify-between mb-5">
+    <div>
+      <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Current salary</p>
+      <p class="text-3xl font-bold text-gray-900">
+        <%= @profile.current_salary ? gbp(@profile.current_salary) : "Not set" %>
+      </p>
+    </div>
+    <%= link_to "Record salary change",
+          new_admin_employee_profile_salary_history_path(@current_company.slug, @profile),
+          class: "inline-flex items-center gap-1.5 bg-primary-500 hover:bg-primary-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors" %>
+  </div>
+
+  <% if @salary_histories.empty? %>
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm flex items-center justify-center py-12 text-center">
+      <p class="text-sm text-gray-400">No salary history yet.</p>
+    </div>
+  <% else %>
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <table class="min-w-full">
+        <thead>
+          <tr class="bg-gray-50/70 border-b border-gray-100">
+            <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400">Effective date</th>
+            <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400">Amount</th>
+            <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden sm:table-cell">Change</th>
+            <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden sm:table-cell">Reason</th>
+            <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden md:table-cell">Recorded by</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          <% @salary_histories.each_with_index do |sh, i| %>
+            <% prev = @salary_histories[i + 1] %>
+            <% diff = prev ? (sh.amount - prev.amount) : nil %>
+            <tr class="hover:bg-gray-50/60 transition-colors">
+              <td class="px-5 py-4 text-sm text-gray-700 whitespace-nowrap font-medium">
+                <%= sh.effective_date.strftime("%d %b %Y") %>
+                <% if i == 0 %>
+                  <span class="ml-1.5 text-xs text-primary-600 font-semibold">Current</span>
+                <% end %>
+              </td>
+              <td class="px-5 py-4 text-sm font-bold text-gray-900"><%= gbp(sh.amount) %></td>
+              <td class="px-5 py-4 hidden sm:table-cell">
+                <% if diff %>
+                  <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ring-1 ring-inset
+                               <%= diff >= 0 ? "bg-emerald-50 text-emerald-700 ring-emerald-600/20" : "bg-red-50 text-red-700 ring-red-600/20" %>">
+                    <%= diff >= 0 ? "+" : "" %><%= gbp(diff) %>
+                  </span>
+                <% else %>
+                  <span class="text-xs text-gray-400">Starting salary</span>
+                <% end %>
+              </td>
+              <td class="px-5 py-4 text-sm text-gray-500 hidden sm:table-cell"><%= sh.reason.presence || "—" %></td>
+              <td class="px-5 py-4 text-sm text-gray-400 hidden md:table-cell"><%= sh.recorder.full_name %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+
+<% elsif active_tab == "documents" %>
+  <div class="flex items-center justify-between mb-5">
+    <h2 class="text-base font-semibold text-gray-900">Documents (<%= @documents.size %>)</h2>
+    <%= link_to "Add document",
+          new_admin_employee_profile_document_path(@current_company.slug, @profile),
+          class: "inline-flex items-center gap-1.5 bg-primary-500 hover:bg-primary-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors" %>
+  </div>
+
+  <% if @documents.empty? %>
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm flex items-center justify-center py-12 text-center">
+      <p class="text-sm text-gray-400">No documents uploaded yet.</p>
+    </div>
+  <% else %>
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <table class="min-w-full">
+        <thead>
+          <tr class="bg-gray-50/70 border-b border-gray-100">
+            <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400">Document</th>
+            <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden sm:table-cell">Category</th>
+            <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden md:table-cell">Uploaded by</th>
+            <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden sm:table-cell">Date</th>
+            <th class="text-right px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400"></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          <% @documents.each do |doc| %>
+            <tr class="hover:bg-gray-50/60 transition-colors">
+              <td class="px-5 py-4">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-gray-900"><%= doc.title %></p>
+                    <% if doc.file.attached? %>
+                      <p class="text-xs text-gray-400"><%= doc.file.filename %></p>
+                    <% end %>
+                  </div>
+                </div>
+              </td>
+              <td class="px-5 py-4 hidden sm:table-cell">
+                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset bg-gray-100 text-gray-600 ring-gray-500/20">
+                  <%= doc.category.humanize %>
+                </span>
+              </td>
+              <td class="px-5 py-4 text-sm text-gray-500 hidden md:table-cell"><%= doc.uploader.full_name %></td>
+              <td class="px-5 py-4 text-xs text-gray-400 hidden sm:table-cell whitespace-nowrap"><%= doc.created_at.strftime("%d %b %Y") %></td>
+              <td class="px-5 py-4 text-right">
+                <div class="flex items-center gap-3 justify-end">
+                  <% if doc.file.attached? %>
+                    <%= link_to "View", doc.file_url,
+                          target: "_blank", rel: "noopener noreferrer",
+                          class: "text-xs font-medium text-primary-600 hover:text-primary-700" %>
+                    <%= link_to "Download", doc.download_url,
+                          target: "_blank", rel: "noopener noreferrer",
+                          class: "text-xs font-medium text-gray-600 hover:text-gray-700" %>
+                    <span class="text-xs text-gray-400"><%= doc.file_size_display %></span>
+                  <% end %>
+                  <%= link_to "Remove",
+                        admin_employee_profile_document_path(@current_company.slug, @profile, doc),
+                        data: { turbo_method: :delete, turbo_confirm: "Remove this document?" },
+                        class: "text-xs font-medium text-red-600 hover:text-red-700" %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+
+<% elsif active_tab == "bank_details" %>
+  <div class="flex items-center justify-between mb-5">
+    <h2 class="text-base font-semibold text-gray-900">Bank details</h2>
+    <%= link_to "Update bank details",
+          new_admin_employee_profile_bank_detail_path(@current_company.slug, @profile),
+          class: "inline-flex items-center gap-1.5 bg-primary-500 hover:bg-primary-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors" %>
+  </div>
+  <div class="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 flex gap-3 mb-5">
+    <svg class="w-4 h-4 text-amber-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+    <p class="text-xs text-amber-700">Bank details cannot be edited — update creates a new record and deactivates the previous one. All changes are permanently logged.</p>
+  </div>
+  <% if @bank_detail %>
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+      <div class="flex items-center gap-3 mb-5">
+        <div class="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center">
+          <svg class="w-5 h-5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/></svg>
+        </div>
+        <div>
+          <p class="text-sm font-semibold text-gray-900"><%= @bank_detail.bank_name %></p>
+          <span class="text-xs text-emerald-600 font-medium">Active</span>
+        </div>
+      </div>
+      <dl class="grid grid-cols-2 gap-x-6 gap-y-4">
+        <div>
+          <dt class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-0.5">Account name</dt>
+          <dd class="text-sm font-semibold text-gray-900"><%= @bank_detail.account_name %></dd>
+        </div>
+        <div>
+          <dt class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-0.5">Sort code</dt>
+          <dd class="text-sm font-semibold text-gray-900 font-mono"><%= @bank_detail.sort_code %></dd>
+        </div>
+        <div>
+          <dt class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-0.5">Account number</dt>
+          <dd class="text-sm font-semibold text-gray-900 font-mono"><%= @bank_detail.account_number %></dd>
+        </div>
+      </dl>
+    </div>
+  <% else %>
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm flex items-center justify-center py-12 text-center">
+      <p class="text-sm text-gray-400">No bank details on file.</p>
+    </div>
+  <% end %>
+
+<% elsif active_tab == "work_history" %>
+  <div class="flex items-center justify-between mb-5">
+    <h2 class="text-base font-semibold text-gray-900">Work history</h2>
+    <%= link_to "Add previous employer",
+          new_admin_employee_profile_employment_history_path(@current_company.slug, @profile),
+          class: "inline-flex items-center gap-1.5 bg-primary-500 hover:bg-primary-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors" %>
+  </div>
+  <% if @employment_histories.empty? %>
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm flex items-center justify-center py-12 text-center">
+      <p class="text-sm text-gray-400">No previous employment recorded.</p>
+    </div>
+  <% else %>
+    <div class="space-y-3">
+      <% @employment_histories.each do |h| %>
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex-1">
+              <p class="text-sm font-semibold text-gray-900"><%= h.company_name %></p>
+              <p class="text-sm text-gray-600 mt-0.5"><%= h.job_title %></p>
+              <div class="flex items-center gap-2 mt-1.5 text-xs text-gray-400">
+                <span>
+                  <%= h.start_date.strftime("%b %Y") %> &rarr;
+                  <%= h.end_date ? h.end_date.strftime("%b %Y") : "Present" %>
+                </span>
+                <span>&middot;</span>
+                <span><%= h.duration %></span>
+                <% if h.location.present? %>
+                  <span>&middot;</span>
+                  <span><%= h.location %></span>
+                <% end %>
+              </div>
+              <% if h.reason_for_leaving.present? %>
+                <p class="text-xs text-gray-500 mt-1.5">
+                  <span class="font-medium">Reason for leaving:</span> <%= h.reason_for_leaving %>
+                </p>
+              <% end %>
+              <% if h.notes.present? %>
+                <p class="text-xs text-gray-500 mt-1 italic"><%= h.notes %></p>
+              <% end %>
+            </div>
+            <div class="flex items-center gap-3 flex-shrink-0">
+              <%= link_to "Edit",
+                    edit_admin_employee_profile_employment_history_path(@current_company.slug, @profile, h),
+                    class: "text-xs font-medium text-primary-600 hover:text-primary-700" %>
+              <%= button_to "Remove",
+                    admin_employee_profile_employment_history_path(@current_company.slug, @profile, h),
+                    method: :delete,
+                    data: { turbo_confirm: "Remove this employment record?" },
+                    class: "text-xs font-medium text-red-600 hover:text-red-700 bg-transparent border-0 cursor-pointer p-0" %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+<% elsif active_tab == "references" %>
+  <div class="flex items-center justify-between mb-5">
+    <h2 class="text-base font-semibold text-gray-900">References</h2>
+    <%= link_to "Add reference",
+          new_admin_employee_profile_employee_reference_path(@current_company.slug, @profile),
+          class: "inline-flex items-center gap-1.5 bg-primary-500 hover:bg-primary-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors" %>
+  </div>
+  <% if @references.empty? %>
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm flex items-center justify-center py-12 text-center">
+      <p class="text-sm text-gray-400">No references added yet.</p>
+    </div>
+  <% else %>
+    <div class="space-y-3">
+      <% @references.each do |ref| %>
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <p class="text-sm font-semibold text-gray-900"><%= ref.referee_name %></p>
+                <%= status_badge(ref.status) %>
+              </div>
+              <p class="text-xs text-gray-500">
+                <%= ref.relationship %>
+                <% if ref.organisation.present? %>
+                  &middot; <%= ref.organisation %>
+                <% end %>
+              </p>
+              <div class="flex items-center gap-4 mt-2 text-xs text-gray-400">
+                <% if ref.email.present? %>
+                  <span><%= ref.email %></span>
+                <% end %>
+                <% if ref.phone.present? %>
+                  <span><%= ref.phone %></span>
+                <% end %>
+              </div>
+              <% if ref.notes.present? %>
+                <p class="text-xs text-gray-500 mt-2 italic"><%= ref.notes %></p>
+              <% end %>
+            </div>
+            <%= link_to "Edit",
+                  edit_admin_employee_profile_employee_reference_path(@current_company.slug, @profile, ref),
+                  class: "text-xs font-medium text-primary-600 hover:text-primary-700 flex-shrink-0" %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+<% elsif active_tab == "savings_advances" %>
+  <%# Savings plans %>
+  <div class="mb-8">
+    <h2 class="text-base font-semibold text-gray-900 mb-4">
+      Savings Plans
+      <span class="ml-1.5 text-sm font-normal text-gray-400">(<%= @savings_plans.size %>)</span>
+    </h2>
+    <% if @savings_plans.empty? %>
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm flex items-center justify-center py-10 text-center">
+        <p class="text-sm text-gray-400">No savings plans.</p>
+      </div>
+    <% else %>
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <table class="min-w-full">
+          <thead>
+            <tr class="bg-gray-50/70 border-b border-gray-100">
+              <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Plan</th>
+              <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Monthly</th>
+              <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Saved</th>
+              <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <% @savings_plans.each do |plan| %>
+              <tr>
+                <td class="px-5 py-3.5 text-sm font-medium text-gray-900"><%= plan.name %></td>
+                <td class="px-5 py-3.5 text-sm text-gray-700"><%= gbp(plan.monthly_amount) %></td>
+                <td class="px-5 py-3.5 text-sm font-semibold text-gray-900"><%= gbp(plan.total_saved) %></td>
+                <td class="px-5 py-3.5"><%= status_badge(plan.status) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Salary advances %>
+  <div>
+    <h2 class="text-base font-semibold text-gray-900 mb-4">
+      Salary Advances
+      <span class="ml-1.5 text-sm font-normal text-gray-400">(<%= @advances.size %>)</span>
+    </h2>
+    <% if @advances.empty? %>
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm flex items-center justify-center py-10 text-center">
+        <p class="text-sm text-gray-400">No salary advances.</p>
+      </div>
+    <% else %>
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <table class="min-w-full">
+          <thead>
+            <tr class="bg-gray-50/70 border-b border-gray-100">
+              <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Amount</th>
+              <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Repayment</th>
+              <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Applied</th>
+              <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Status</th>
+              <th class="text-right px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400"></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <% @advances.each do |adv| %>
+              <tr>
+                <td class="px-5 py-3.5 text-sm font-semibold text-gray-900"><%= gbp(adv.amount) %></td>
+                <td class="px-5 py-3.5 text-sm text-gray-700"><%= gbp(adv.monthly_instalment) %>/mo &times; <%= adv.repayment_months %></td>
+                <td class="px-5 py-3.5 text-xs text-gray-400 whitespace-nowrap"><%= adv.applied_at.strftime("%d %b %Y") %></td>
+                <td class="px-5 py-3.5"><%= status_badge(adv.status) %></td>
+                <td class="px-5 py-3.5 text-right">
+                  <%= link_to "View",
+                        admin_salary_advance_path(@current_company.slug, adv),
+                        class: "text-xs font-medium text-primary-600 hover:text-primary-700" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  </div>
+<% end %>

@@ -1,0 +1,68 @@
+<%# Employee — Savings Plans Index %>
+
+<div class="flex items-center justify-between mb-7">
+  <div>
+    <h1 class="text-2xl font-semibold text-gray-900">Savings Plans</h1>
+    <p class="text-gray-500 text-sm mt-1">All your salary-deduction savings plans</p>
+  </div>
+  <%= link_to new_employee_savings_plan_path(@current_company.slug),
+        class: "inline-flex items-center gap-1.5 bg-primary-500 hover:bg-primary-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm shadow-primary-500/25" do %>
+    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+    New plan
+  <% end %>
+</div>
+
+<% if @plans.empty? %>
+  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col items-center justify-center py-20 text-center px-8">
+    <div class="w-14 h-14 rounded-2xl bg-primary-50 flex items-center justify-center mb-4">
+      <svg class="w-7 h-7 text-primary-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    </div>
+    <p class="text-base font-semibold text-gray-900 mb-1">No savings plans yet</p>
+    <p class="text-sm text-gray-400 mb-6 max-w-xs">Set up a savings plan and a portion of your salary will be automatically set aside each month.</p>
+    <%= link_to "Create your first plan", new_employee_savings_plan_path(@current_company.slug),
+          class: "inline-flex items-center gap-1.5 bg-primary-500 hover:bg-primary-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors" %>
+  </div>
+<% else %>
+  <div class="space-y-4">
+    <% @plans.each do |plan| %>
+      <%= link_to employee_savings_plan_path(@current_company.slug, plan),
+            class: "block bg-white rounded-xl border border-gray-200 shadow-sm hover:border-primary-300 hover:shadow-md transition-all p-5 group" do %>
+        <div class="flex items-start justify-between gap-4 mb-4">
+          <div class="min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 class="text-base font-semibold text-gray-900 group-hover:text-primary-600 transition-colors"><%= plan.name %></h3>
+              <%= status_badge(plan.status) %>
+            </div>
+            <p class="text-xs text-gray-400 mt-1">
+              Started <%= plan.start_date.strftime("%b %Y") %>
+              &middot; Matures <%= plan.maturity_date.strftime("%b %Y") %>
+            </p>
+          </div>
+          <div class="text-right flex-shrink-0">
+            <p class="text-lg font-bold text-gray-900"><%= gbp(plan.monthly_amount) %></p>
+            <p class="text-xs text-gray-400">per month</p>
+          </div>
+        </div>
+
+        <%# Progress %>
+        <div class="mb-3">
+          <div class="flex items-center justify-between text-xs text-gray-500 mb-1.5">
+            <span><%= gbp(plan.total_saved) %> saved</span>
+            <span><%= plan.progress_percentage %>% of <%= gbp(plan.target_amount) %></span>
+          </div>
+          <div class="w-full bg-gray-100 rounded-full h-2">
+            <div class="<%= plan.matured? || plan.closed? ? "bg-blue-500" : "bg-primary-500" %> h-2 rounded-full transition-all"
+                 style="width: <%= plan.progress_percentage %>%"></div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4 text-xs text-gray-500">
+          <span><%= plan.duration_months %> month plan</span>
+          <% unless plan.declined? || plan.closed? %>
+            <span><%= plan.months_remaining %> months remaining</span>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

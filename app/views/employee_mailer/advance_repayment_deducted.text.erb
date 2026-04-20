@@ -1,0 +1,14 @@
+ADVANCE REPAYMENT DEDUCTED
+
+Hi <%= @user.full_name.split.first %>,
+
+Instalment <%= @schedule.instalment_number %> of <%= @advance.repayment_months %> has been deducted from your salary.
+
+DETAILS
+───────
+This instalment:        <%= formatted_currency(@schedule.amount) %>
+Remaining instalments:  <%= @advance.repayment_months - @schedule.instalment_number %>
+<% if @next %>Next repayment:         <%= formatted_date(@next.due_date) %>
+<% end %>
+View advance details:
+<%= @advance_url %>

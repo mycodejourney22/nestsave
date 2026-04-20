@@ -1,0 +1,94 @@
+<%# Admin — Team Members %>
+
+<div class="flex items-center justify-between mb-7">
+  <div>
+    <h1 class="text-2xl font-semibold text-gray-900">Team Members</h1>
+    <p class="text-gray-500 text-sm mt-1">Manage employees and payroll admins</p>
+  </div>
+  <%= link_to new_admin_company_membership_path(@current_company.slug),
+        class: "inline-flex items-center gap-1.5 bg-primary-500 hover:bg-primary-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm" do %>
+    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+    Invite employee
+  <% end %>
+</div>
+
+<% if @memberships.empty? %>
+  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col items-center justify-center py-20 text-center px-8">
+    <div class="w-14 h-14 rounded-2xl bg-primary-50 flex items-center justify-center mb-4">
+      <svg class="w-7 h-7 text-primary-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
+    </div>
+    <p class="text-base font-semibold text-gray-900 mb-1">No team members yet</p>
+    <p class="text-sm text-gray-400 mb-6 max-w-xs">Invite employees to start managing their savings plans and salary advances.</p>
+    <%= link_to "Invite first member", new_admin_company_membership_path(@current_company.slug),
+          class: "inline-flex items-center gap-1.5 bg-primary-500 hover:bg-primary-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors" %>
+  </div>
+<% else %>
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <table class="min-w-full">
+      <thead>
+        <tr class="bg-gray-50/70 border-b border-gray-100">
+          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400">Member</th>
+          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden sm:table-cell">Role</th>
+          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden md:table-cell">Salary</th>
+          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden sm:table-cell">Status</th>
+          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden md:table-cell">Joined</th>
+          <th class="text-right px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <% @memberships.each do |m| %>
+          <tr class="hover:bg-gray-50/60 transition-colors" id="membership_<%= m.id %>">
+            <td class="px-5 py-4">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
+                            <%= m.pending? ? "bg-amber-100" : "bg-primary-100" %>">
+                  <span class="text-xs font-semibold <%= m.pending? ? "text-amber-600" : "text-primary-600" %>">
+                    <%= m.display_initials %>
+                  </span>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-gray-900"><%= m.display_name %></p>
+                  <p class="text-xs text-gray-400"><%= m.display_email %></p>
+                </div>
+              </div>
+            </td>
+            <td class="px-5 py-4 hidden sm:table-cell">
+              <span class="text-xs font-medium text-gray-600 capitalize"><%= m.role.humanize %></span>
+            </td>
+            <td class="px-5 py-4 text-sm font-semibold text-gray-900 hidden md:table-cell">
+              <% if m.pending? %>
+                <span class="text-gray-400 text-xs">Pending acceptance</span>
+              <% else %>
+                <%= gbp(m.current_salary) %>
+              <% end %>
+            </td>
+            <td class="px-5 py-4 hidden sm:table-cell"><%= status_badge(m.status) %></td>
+            <td class="px-5 py-4 text-xs text-gray-400 hidden md:table-cell whitespace-nowrap">
+              <% if m.pending? %>
+                Invited <%= m.invitation_sent_at&.strftime("%d %b %Y") %>
+              <% else %>
+                <%= m.joined_at&.strftime("%d %b %Y") || m.created_at.strftime("%d %b %Y") %>
+              <% end %>
+            </td>
+            <td class="px-5 py-4 text-right">
+              <% if m.pending? %>
+                <div class="flex items-center gap-2 justify-end">
+                  <span class="text-xs text-amber-600 font-medium">Invite pending</span>
+                  <%= button_to "Cancel invite",
+                        admin_company_membership_path(@current_company.slug, m),
+                        method: :delete,
+                        data:   { turbo_confirm: "Cancel the invitation to #{m.display_email}? This cannot be undone." },
+                        class:  "text-xs font-medium text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-lg transition-colors border-0 cursor-pointer" %>
+                </div>
+              <% else %>
+                <%= link_to "Edit",
+                      edit_admin_company_membership_path(@current_company.slug, m),
+                      class: "text-xs font-semibold text-primary-600 hover:text-primary-800 bg-primary-50 hover:bg-primary-100 px-3 py-1.5 rounded-lg transition-colors" %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% end %>

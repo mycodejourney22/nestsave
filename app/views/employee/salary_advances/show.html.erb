@@ -1,0 +1,89 @@
+<%# Employee — Salary Advance Show %>
+
+<div class="flex items-center gap-2 text-sm text-gray-400 mb-6">
+  <%= link_to "Salary Advances", employee_salary_advances_path(@current_company.slug),
+        class: "hover:text-gray-600 transition-colors" %>
+  <span>/</span>
+  <span class="text-gray-700 font-medium"><%= gbp(@advance.amount) %> advance</span>
+</div>
+
+<div class="flex items-start justify-between gap-4 mb-8">
+  <div>
+    <div class="flex items-center gap-3 mb-1">
+      <h1 class="text-2xl font-semibold text-gray-900">Salary Advance — <%= gbp(@advance.amount) %></h1>
+      <%= status_badge(@advance.status) %>
+    </div>
+    <p class="text-sm text-gray-400">
+      Applied <%= @advance.applied_at.strftime("%d %b %Y") %>
+      <% if @advance.reviewed_at %>
+        &middot; Reviewed <%= @advance.reviewed_at.strftime("%d %b %Y") %>
+      <% end %>
+      <% if @advance.disbursed_at %>
+        &middot; Disbursed <%= @advance.disbursed_at.strftime("%d %b %Y") %>
+      <% end %>
+    </p>
+  </div>
+</div>
+
+<%# Stats row %>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+  <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+    <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Advance amount</p>
+    <p class="text-xl font-bold text-gray-900"><%= gbp(@advance.amount) %></p>
+  </div>
+  <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+    <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Monthly repayment</p>
+    <p class="text-xl font-bold text-gray-900"><%= gbp(@advance.monthly_instalment) %></p>
+  </div>
+  <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+    <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Total repaid</p>
+    <p class="text-xl font-bold text-emerald-600"><%= gbp(@advance.amount_repaid) %></p>
+  </div>
+  <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+    <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Outstanding</p>
+    <p class="text-xl font-bold text-gray-900"><%= gbp(@advance.amount_outstanding) %></p>
+  </div>
+</div>
+
+<%# Reason %>
+<div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-6">
+  <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Reason for advance</p>
+  <p class="text-sm text-gray-700"><%= @advance.reason %></p>
+  <% if @advance.review_note.present? %>
+    <div class="mt-4 pt-4 border-t border-gray-100">
+      <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Reviewer note</p>
+      <p class="text-sm text-gray-700"><%= @advance.review_note %></p>
+    </div>
+  <% end %>
+</div>
+
+<%# Repayment schedule %>
+<% if @schedule.any? %>
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <div class="px-5 py-4 border-b border-gray-100">
+      <h2 class="text-sm font-semibold text-gray-900">Repayment Schedule</h2>
+    </div>
+    <table class="min-w-full">
+      <thead>
+        <tr class="bg-gray-50/70">
+          <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400">#</th>
+          <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Due date</th>
+          <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Amount</th>
+          <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Status</th>
+          <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Paid on</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <% @schedule.each do |s| %>
+          <tr class="<%= s.paid? ? "bg-gray-50/50" : "" %>">
+            <td class="px-5 py-3.5 text-sm text-gray-500"><%= s.instalment_number %></td>
+            <td class="px-5 py-3.5 text-sm text-gray-700 font-medium"><%= s.due_date.strftime("%d %b %Y") %></td>
+            <td class="px-5 py-3.5 text-sm font-semibold text-gray-900"><%= gbp(s.amount) %></td>
+            <td class="px-5 py-3.5"><%= status_badge(s.status) %></td>
+            <td class="px-5 py-3.5 text-sm text-gray-400"><%= s.paid_at&.strftime("%d %b %Y") || "—" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% end %>

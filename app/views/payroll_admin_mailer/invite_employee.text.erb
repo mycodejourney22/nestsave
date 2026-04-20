@@ -1,0 +1,15 @@
+INVITATION SENT
+
+You've invited <%= @invited_name %> (<%= @invited_email %>) to join <%= @company.name %> on NestSave.
+
+They'll receive a separate email to set up their account. The link expires in 48 hours.
+
+EMPLOYEE DETAILS
+────────────────
+Name:   <%= @invited_name %>
+Email:  <%= @invited_email %>
+<% if @profile&.job_title.present? %>Role:   <%= @profile.job_title %><% if @profile.department.present? %> · <%= @profile.department %><% end %>
+<% end %><% if @profile&.current_salary.present? %>Salary: <%= formatted_currency(@profile.current_salary) %>/month
+<% end %>
+View team members:
+<%= @team_url %>

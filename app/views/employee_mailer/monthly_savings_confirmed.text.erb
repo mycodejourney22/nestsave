@@ -1,0 +1,15 @@
+MONTHLY SAVING CONFIRMED
+
+Hi <%= @user.full_name.split.first %>,
+
+Your monthly saving of <%= formatted_currency(@plan.monthly_amount) %> has been deducted from your salary.
+
+PLAN: <%= @plan.name %>
+────────────────────
+This month's saving: <%= formatted_currency(@plan.monthly_amount) %>
+Running total:       <%= formatted_currency(@plan.total_saved) %>
+Target:              <%= formatted_currency(@plan.target_amount) %>
+Progress:            <%= [@plan.progress_percentage.to_i, 100].min %>%
+
+View your savings:
+<%= @plan_url %>

@@ -1,0 +1,16 @@
+ACTION REQUIRED — NEW SAVINGS PLAN
+
+<%= @employee.full_name %> (<%= @employee.email %>) has submitted a savings plan for approval.
+
+PLAN DETAILS
+────────────
+Plan name:     <%= @plan.name %>
+Monthly amount: <%= formatted_currency(@plan.monthly_amount) %>
+Duration:      <%= @plan.duration_months %> months
+Start date:    <%= formatted_date(@plan.start_date) %>
+
+This amount will be deducted from their salary each payroll cycle once approved.
+Payroll runs on the <%= @company.payroll_day.ordinalize %> of each month.
+
+Review in your dashboard:
+<%= @dashboard_url %>

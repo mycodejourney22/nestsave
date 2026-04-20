@@ -1,0 +1,14 @@
+PAYROLL DEDUCTIONS SUMMARY — <%= @period.upcase %>
+<%= @company.name %>
+
+SUMMARY
+───────
+Employees saving:     <%= @summary[:active_savers] %>
+Total savings to deduct: <%= formatted_currency(@summary[:savings_total]) %>
+Advance repayments:   <%= formatted_currency(@summary[:advance_repayments]) %>
+Net payroll adjustment:  <%= formatted_currency(@summary[:savings_total].to_f + @summary[:advance_repayments].to_f) %>
+
+Apply these deductions to your payroll run for <%= @period %>.
+
+View full breakdown:
+<%= @dashboard_url %>

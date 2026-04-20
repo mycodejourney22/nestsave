@@ -1,0 +1,17 @@
+PLAN APPROVED ✓
+
+Hi <%= @user.full_name.split.first %>,
+
+Your savings plan "<%= @plan.name %>" has been approved and is now active.
+
+PLAN DETAILS
+────────────
+Plan name:     <%= @plan.name %>
+Monthly saving: <%= formatted_currency(@plan.monthly_amount) %>
+Target amount: <%= formatted_currency(@plan.target_amount) %>
+Maturity date: <%= formatted_date(@plan.maturity_date) %>
+
+Your first deduction of <%= formatted_currency(@plan.monthly_amount) %> will be on <%= formatted_date(@plan.start_date) %>.
+
+View your plan:
+<%= @plan_url %>

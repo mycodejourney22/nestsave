@@ -1,0 +1,21 @@
+ADVANCE APPROVED ✓
+
+Hi <%= @user.full_name.split.first %>,
+
+Your salary advance of <%= formatted_currency(@advance.amount) %> has been approved.
+Your payroll manager will transfer the funds to you shortly.
+
+ADVANCE DETAILS
+───────────────
+Amount:            <%= formatted_currency(@advance.amount) %>
+Repayment period:  <%= @advance.repayment_months %> months
+Monthly instalment: <%= formatted_currency(@advance.monthly_instalment) %>
+
+REPAYMENT SCHEDULE
+──────────────────
+<% @schedules.each do |s| %>Instalment <%= s.instalment_number %> of <%= @advance.repayment_months %>: <%= formatted_currency(s.amount) %> due <%= formatted_date(s.due_date) %>
+<% end %>
+Repayments will be deducted automatically from your salary each payroll cycle.
+
+View advance details:
+<%= @advance_url %>

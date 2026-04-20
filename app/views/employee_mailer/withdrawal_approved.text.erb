@@ -1,0 +1,17 @@
+WITHDRAWAL APPROVED ✓
+
+Hi <%= @user.full_name.split.first %>,
+
+Your withdrawal of <%= formatted_currency(@request.amount) %> from "<%= @plan.name %>" has been approved.
+
+DETAILS
+───────
+Plan:              <%= @plan.name %>
+Amount approved:   <%= formatted_currency(@request.amount) %>
+Remaining balance: <%= formatted_currency(@plan.total_saved.to_f - @request.amount.to_f) %>
+
+Your payroll manager will process the payment manually.
+You'll receive the funds within [X] working days.
+
+View your account:
+<%= @plans_url %>

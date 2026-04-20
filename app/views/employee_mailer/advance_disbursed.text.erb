@@ -1,0 +1,22 @@
+ADVANCE DISBURSED ✓
+
+Hi <%= @user.full_name.split.first %>,
+
+<%= formatted_currency(@advance.amount) %> has been sent to you.
+Check your bank account — it may take 1–2 working days to arrive.
+
+DETAILS
+───────
+Amount sent:       <%= formatted_currency(@advance.amount) %>
+Repayment period:  <%= @advance.repayment_months %> months
+Monthly instalment: <%= formatted_currency(@advance.monthly_instalment) %>
+<% if @schedules.first %>First repayment:   <%= formatted_date(@schedules.first.due_date) %>
+<% end %>
+Repayments will be deducted automatically from your salary each payroll cycle.
+
+REPAYMENT SCHEDULE
+──────────────────
+<% @schedules.each do |s| %><%= s.instalment_number %>. <%= formatted_currency(s.amount) %> — <%= formatted_date(s.due_date) %>
+<% end %>
+View advance details:
+<%= @advance_url %>

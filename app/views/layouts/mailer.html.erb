@@ -1,0 +1,76 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>NestSave</title>
+  <!--[if mso]>
+  <style type="text/css">
+    table { border-collapse: collapse; }
+    .btn-td { mso-padding-alt: 0; }
+  </style>
+  <![endif]-->
+</head>
+<body style="margin:0;padding:0;background-color:#f3f4f6;font-family:Arial,Helvetica,sans-serif;-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;">
+
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="background-color:#f3f4f6;">
+    <tr>
+      <td align="center" style="padding:32px 16px 40px;">
+
+        <!-- Email card: max 600px -->
+        <table width="600" cellpadding="0" cellspacing="0" border="0" role="presentation"
+               style="max-width:600px;width:100%;background-color:#ffffff;border-radius:8px;
+                      border:1px solid #e5e7eb;overflow:hidden;">
+
+          <!-- ── Header ───────────────────────────────────────── -->
+          <tr>
+            <td style="background-color:#0D2318;padding:20px 32px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation">
+                <tr>
+                  <td>
+                    <!-- Wordmark: Nest in white, Save in teal -->
+                    <span style="font-family:Georgia,'Times New Roman',serif;font-size:22px;
+                                 font-weight:bold;color:#ffffff;letter-spacing:-0.3px;
+                                 text-decoration:none;">Nest<span style="color:#1D9E75;">Save</span></span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ── Body (yielded content) ──────────────────────── -->
+          <tr>
+            <td style="padding:32px 32px 24px;">
+              <%= yield %>
+            </td>
+          </tr>
+
+          <!-- ── Footer ───────────────────────────────────────── -->
+          <tr>
+            <td style="background-color:#f9fafb;border-top:1px solid #e5e7eb;padding:20px 32px;">
+              <% if defined?(@company) && @company.present? %>
+                <p style="margin:0 0 6px;font-family:Arial,Helvetica,sans-serif;font-size:12px;
+                           color:#9ca3af;line-height:1.5;">
+                  You're receiving this because you're a member of <strong style="color:#6b7280;"><%= @company.name %></strong>.
+                </p>
+              <% end %>
+              <p style="margin:0 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:12px;
+                         color:#9ca3af;line-height:1.5;">
+                NestSave &bull; nestsave.co
+              </p>
+              <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:#d1d5db;">
+                &copy; 2025 NestSave. All rights reserved.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+        <!-- End email card -->
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>

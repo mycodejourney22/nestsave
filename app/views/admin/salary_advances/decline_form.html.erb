@@ -1,0 +1,45 @@
+<%# Admin — Decline Salary Advance (modal) %>
+
+<turbo-frame id="modal">
+  <div class="p-6">
+    <div class="flex items-start justify-between mb-5">
+      <div>
+        <h2 class="text-lg font-semibold text-gray-900">Decline Advance</h2>
+        <p class="text-sm text-gray-500 mt-0.5">
+          <%= @advance.user.full_name %> &mdash; <%= gbp(@advance.amount) %>
+        </p>
+      </div>
+      <button data-action="modal#close"
+              class="text-gray-400 hover:text-gray-600 transition-colors p-1 -mr-1 rounded-lg hover:bg-gray-100">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="bg-red-50 border border-red-100 rounded-xl px-4 py-3 mb-5">
+      <p class="text-sm text-red-700">
+        This will decline the advance request. The employee will be notified and can re-apply.
+      </p>
+    </div>
+
+    <%= form_with url: decline_admin_salary_advance_path(@current_company.slug, @advance),
+          method: :patch do |f| %>
+      <div class="mb-5">
+        <%= label_tag :note, "Reason for declining", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+        <%= text_area_tag :note, nil,
+              rows: 3,
+              placeholder: "Explain why the request has been declined...",
+              class: "block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition resize-none" %>
+      </div>
+      <div class="flex gap-3">
+        <%= f.submit "Decline advance",
+              class: "flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold px-4 py-2.5 rounded-xl text-sm transition-colors cursor-pointer text-center" %>
+        <button type="button" data-action="modal#close"
+                class="px-4 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors">
+          Cancel
+        </button>
+      </div>
+    <% end %>
+  </div>
+</turbo-frame>

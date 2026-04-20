@@ -1,0 +1,52 @@
+<h1 style="margin:0 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:22px;
+            font-weight:bold;color:#111827;line-height:1.2;">
+  Update on your advance request
+</h1>
+<p style="margin:0 0 20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;
+           color:#374151;line-height:1.6;">
+  Hi <%= @user.full_name.split.first %>,
+</p>
+<p style="margin:0 0 20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;
+           color:#374151;line-height:1.6;">
+  Your salary advance request of <strong><%= formatted_currency(@advance.amount) %></strong>
+  was not approved at this time.
+</p>
+
+<% if @note.present? %>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation"
+         style="background-color:#fafafa;border-left:3px solid #d1d5db;border-radius:0 6px 6px 0;
+                margin:0 0 24px;">
+    <tr>
+      <td style="padding:14px 18px;">
+        <p style="margin:0 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:11px;
+                   font-weight:700;color:#9ca3af;letter-spacing:0.5px;text-transform:uppercase;">
+          Note from your payroll manager
+        </p>
+        <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:14px;
+                   color:#374151;line-height:1.5;font-style:italic;">
+          "<%= @note %>"
+        </p>
+      </td>
+    </tr>
+  </table>
+<% end %>
+
+<p style="margin:0 0 28px;font-family:Arial,Helvetica,sans-serif;font-size:14px;
+           color:#374151;line-height:1.5;">
+  If you have questions, please speak with your payroll manager.
+  You can view your account below.
+</p>
+
+<!-- CTA -->
+<table cellpadding="0" cellspacing="0" border="0" role="presentation">
+  <tr>
+    <td style="border-radius:6px;background-color:#1D9E75;" class="btn-td">
+      <a href="<%= @advances_url %>"
+         style="display:inline-block;padding:12px 24px;font-family:Arial,Helvetica,sans-serif;
+                font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;
+                border-radius:6px;line-height:1.2;">
+        View your account &rarr;
+      </a>
+    </td>
+  </tr>
+</table>

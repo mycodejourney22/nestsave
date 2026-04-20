@@ -1,0 +1,13 @@
+ACTION REQUIRED — WITHDRAWAL REQUEST
+
+<%= @employee.full_name %> (<%= @employee.email %>) has requested a withdrawal.
+
+REQUEST DETAILS
+───────────────
+Plan:            <%= @request.savings_plan.name %>
+Amount requested: <%= formatted_currency(@request.amount) %>
+Current balance:  <%= formatted_currency(@request.savings_plan.total_saved) %>
+<% if @request.reason.present? %>Reason:          <%= @request.reason %>
+<% end %>
+Review in your dashboard:
+<%= @dashboard_url %>

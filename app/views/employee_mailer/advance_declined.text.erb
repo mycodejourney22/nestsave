@@ -1,0 +1,13 @@
+UPDATE ON YOUR ADVANCE REQUEST
+
+Hi <%= @user.full_name.split.first %>,
+
+Your salary advance request of <%= formatted_currency(@advance.amount) %> was not approved at this time.
+<% if @note.present? %>
+Note from your payroll manager:
+"<%= @note %>"
+<% end %>
+If you have questions, please speak with your payroll manager.
+
+View your account:
+<%= @advances_url %>

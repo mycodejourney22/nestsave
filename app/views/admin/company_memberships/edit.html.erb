@@ -1,0 +1,72 @@
+<%# Admin — Edit Team Member (role/status only — salary managed via HR profile) %>
+
+<div class="max-w-lg">
+  <div class="flex items-center gap-2 text-sm text-gray-400 mb-7">
+    <%= link_to "Employees", admin_employee_profiles_path(@current_company.slug),
+          class: "hover:text-gray-600 transition-colors" %>
+    <span>/</span>
+    <span class="text-gray-700 font-medium"><%= @membership.user.full_name %></span>
+  </div>
+
+  <h1 class="text-2xl font-semibold text-gray-900 mb-2">Edit Member</h1>
+  <p class="text-sm text-gray-500 mb-8">Update role or employment status. To change salary, use the employee's HR profile.</p>
+
+  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+    <div class="flex items-center gap-3 mb-6 pb-6 border-b border-gray-100">
+      <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+        <span class="text-primary-600 text-sm font-semibold">
+          <%= @membership.user.full_name.split.map { |w| w[0] }.first(2).join.upcase %>
+        </span>
+      </div>
+      <div>
+        <p class="text-sm font-semibold text-gray-900"><%= @membership.user.full_name %></p>
+        <p class="text-xs text-gray-400"><%= @membership.user.email %></p>
+      </div>
+    </div>
+
+    <%= form_with model: @membership,
+          url: admin_company_membership_path(@current_company.slug, @membership),
+          method: :patch do |f| %>
+
+      <% if @membership.errors.any? %>
+        <div class="mb-5 rounded-xl bg-red-50 border border-red-200 px-4 py-3">
+          <ul class="list-disc list-inside space-y-0.5">
+            <% @membership.errors.full_messages.each do |msg| %>
+              <li class="text-sm text-red-600"><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class="space-y-5">
+        <div>
+          <%= f.label :role, "Role", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <%= f.select :role,
+                [["Employee", "employee"], ["Studio Manager", "studio_manager"],
+                 ["HR Admin", "hr_admin"], ["Super Admin", "super_admin"]],
+                {},
+                class: "block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition bg-white" %>
+        </div>
+        <div>
+          <%= f.label :status, "Status", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <%= f.select :status,
+                [["Active", "active"], ["Suspended", "suspended"], ["Left", "left"]],
+                {},
+                class: "block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition bg-white" %>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 mt-6">
+        <%= f.submit "Save changes",
+              class: "bg-primary-500 hover:bg-primary-600 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors cursor-pointer" %>
+        <%= link_to "Cancel", admin_employee_profiles_path(@current_company.slug),
+              class: "text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors px-2 py-2" %>
+        <% if @membership.employee_profile %>
+          <%= link_to "Edit full profile",
+                admin_employee_profile_path(@current_company.slug, @membership.employee_profile),
+                class: "ml-auto text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors px-2 py-2" %>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>
