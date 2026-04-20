@@ -2,13 +2,14 @@ databases:
   - name: nestsave-db
     databaseName: nestsave_production
     user: nestsave
-    plan: basic
+    plan: basic-256mb
 
 services:
   - type: web
     name: nestsave-web
     env: ruby
-    plan: basic
+    plan: starter
+    region: frankfurt
     buildCommand: "./bin/render-build.sh"
     startCommand: "bundle exec puma -C config/puma.rb"
     healthCheckPath: /health
