@@ -4,7 +4,14 @@
       "Bash(bin/rails generate:*)",
       "Bash(ruby -c /home/az/nestsave/db/seeds.rb)",
       "Bash(bin/rails restart *)",
-      "Bash(rails routes *)"
+      "Bash(rails routes *)",
+      "Bash(chmod +x /home/az/nestsave/bin/render-build.sh)",
+      "Bash(RAILS_ENV=production SECRET_KEY_BASE=dummy bundle exec rails assets:precompile)",
+      "Bash(RAILS_ENV=production SECRET_KEY_BASE=dummy DATABASE_URL=postgresql://localhost/dummy bundle exec rails assets:precompile)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(git commit *)"
     ]
   }
 }
