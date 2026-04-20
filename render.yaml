@@ -11,7 +11,7 @@ services:
     plan: starter
     region: frankfurt
     buildCommand: "./bin/render-build.sh"
-    startCommand: "bundle exec puma -C config/puma.rb"
+    startCommand: "bundle exec rails db:migrate && bundle exec puma -C config/puma.rb"
     healthCheckPath: /health
     envVars:
       - key: DATABASE_URL
