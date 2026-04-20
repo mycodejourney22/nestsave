@@ -1,4 +1,6 @@
 class Rota < ApplicationRecord
+  self.table_name = "rotas"
+
   belongs_to :team
   belongs_to :creator, class_name: "User", foreign_key: :created_by
 

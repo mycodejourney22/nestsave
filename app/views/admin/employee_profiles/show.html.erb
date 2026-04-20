@@ -165,6 +165,10 @@
             <dd class="text-sm font-medium text-gray-900"><%= @profile.employment_end_date&.strftime("%d %b %Y") || "—" %></dd>
           </div>
           <div>
+            <dt class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-0.5">Team</dt>
+            <dd class="text-sm font-medium text-gray-900"><%= @profile.team&.name || "Company-wide" %></dd>
+          </div>
+          <div>
             <dt class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-0.5">Right to work</dt>
             <dd class="text-sm font-medium text-gray-900"><%= @profile.right_to_work_status.presence || "—" %></dd>
           </div>

@@ -1,10 +1,17 @@
 module Admin
   class TeamsController < ApplicationController
     before_action :require_hr!
-    before_action :set_team, only: [:edit, :update, :destroy]
+    before_action :set_team, only: [:show, :edit, :update, :destroy]
 
     def index
       @teams = @current_company.teams.kept.includes(:employee_profiles).order(:name)
+    end
+
+    def show
+      @members = @team.employee_profiles
+                      .where(deleted_at: nil)
+                      .includes(:company_membership)
+                      .order(:first_name, :last_name)
     end
 
     def new

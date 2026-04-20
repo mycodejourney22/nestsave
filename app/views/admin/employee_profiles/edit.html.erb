@@ -103,6 +103,17 @@
                 class: "block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition" %>
           <p class="text-xs text-gray-400 mt-1">Leave blank if currently employed</p>
         </div>
+        <div class="col-span-2">
+          <%= f.label :team_id, "Team (optional)", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <%= f.select :team_id,
+                options_for_select(
+                  @teams.map { |t| [t.name, t.id] },
+                  @profile.team_id
+                ),
+                { include_blank: "Company-wide (no team)" },
+                class: "block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition bg-white" %>
+          <p class="text-xs text-gray-400 mt-1">Leave blank for HR, social media managers and other company-wide staff</p>
+        </div>
       </div>
     </div>
 

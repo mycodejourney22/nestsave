@@ -1,0 +1,76 @@
+<%# Admin — Team Show %>
+
+<div class="flex items-center gap-2 text-sm text-gray-400 mb-7">
+  <%= link_to "Teams", admin_teams_path(@current_company.slug), class: "hover:text-gray-600 transition-colors" %>
+  <span>/</span>
+  <span class="text-gray-700 font-medium"><%= @team.name %></span>
+</div>
+
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h1 class="text-2xl font-semibold text-gray-900"><%= @team.name %></h1>
+    <% if @team.description.present? %>
+      <p class="text-gray-500 text-sm mt-1"><%= @team.description %></p>
+    <% end %>
+  </div>
+  <div class="flex items-center gap-3">
+    <% if @team.active? %>
+      <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20">Active</span>
+    <% else %>
+      <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 ring-1 ring-inset ring-gray-500/20">Inactive</span>
+    <% end %>
+    <%= link_to "Edit team", edit_admin_team_path(@current_company.slug, @team),
+          class: "inline-flex items-center gap-1.5 bg-white border border-gray-200 hover:border-gray-300 text-gray-700 px-3.5 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm" %>
+  </div>
+</div>
+
+<div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+  <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+    <h2 class="text-sm font-semibold text-gray-900">Members <span class="text-gray-400 font-normal">(<%= @members.size %>)</span></h2>
+  </div>
+
+  <% if @members.empty? %>
+    <div class="flex flex-col items-center justify-center py-16 text-center px-8">
+      <p class="text-sm font-medium text-gray-700">No members assigned</p>
+      <p class="text-xs text-gray-400 mt-1">Assign employees to this team via their profile</p>
+    </div>
+  <% else %>
+    <table class="min-w-full">
+      <thead>
+        <tr class="bg-gray-50/70 border-b border-gray-100">
+          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400">Employee</th>
+          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden sm:table-cell">Job title</th>
+          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden sm:table-cell">Status</th>
+          <th class="text-right px-5 py-3.5"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <% @members.each do |profile| %>
+          <tr class="hover:bg-gray-50/60 transition-colors">
+            <td class="px-5 py-4">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                  <span class="text-xs font-semibold text-primary-600">
+                    <%= profile.full_name.split.map { |w| w[0] }.first(2).join.upcase %>
+                  </span>
+                </div>
+                <p class="text-sm font-medium text-gray-900"><%= profile.full_name %></p>
+              </div>
+            </td>
+            <td class="px-5 py-4 text-sm text-gray-600 hidden sm:table-cell">
+              <%= profile.job_title.presence || "—" %>
+            </td>
+            <td class="px-5 py-4 hidden sm:table-cell">
+              <%= status_badge(profile.company_membership.status) %>
+            </td>
+            <td class="px-5 py-4 text-right">
+              <%= link_to "View profile",
+                    admin_employee_profile_path(@current_company.slug, profile),
+                    class: "text-xs font-medium text-gray-500 hover:text-gray-700" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+</div>

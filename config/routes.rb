@@ -60,7 +60,7 @@ Rails.application.routes.draw do
 
       resources :company_memberships, only: [:index, :new, :create, :edit, :update, :destroy]
       resources :departments,         only: [:index, :new, :create, :edit, :update, :destroy]
-      resources :teams,               only: [:index, :new, :create, :edit, :update, :destroy]
+      resources :teams,               only: [:index, :show, :new, :create, :edit, :update, :destroy]
       resources :leave_types,         only: [:index, :new, :create, :edit, :update]
 
       resources :leave_requests, only: [:index] do

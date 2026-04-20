@@ -6,12 +6,14 @@ module Admin
     def index
       @memberships = @current_company.company_memberships
                                      .kept
-                                     .includes(:user, :employee_profile)
+                                     .includes(:user, employee_profile: :team)
                                      .order(created_at: :asc)
+      @teams = @current_company.teams.active.order(:name)
     end
 
     def new
       @membership = CompanyMembership.new
+      @teams = @current_company.teams.active.order(:name)
     end
 
     def create
@@ -44,6 +46,10 @@ module Admin
         )
 
         raise ActiveRecord::Rollback, result.error unless result.success?
+
+        if membership_params[:team_id].present?
+          result.value.update!(team_id: membership_params[:team_id])
+        end
       end
 
       if @membership.persisted? && @membership.employee_profile.present?
@@ -57,6 +63,7 @@ module Admin
     rescue ActiveRecord::RecordInvalid => e
       @membership ||= CompanyMembership.new
       @membership.errors.add(:base, e.message)
+      @teams = @current_company.teams.active.order(:name)
       render :new, status: :unprocessable_entity
     end
 
@@ -104,7 +111,7 @@ module Admin
 
     def membership_params
       params.require(:company_membership).permit(
-        :full_name, :email, :job_title, :department_id,
+        :full_name, :email, :job_title, :department_id, :team_id,
         :employment_type, :employment_start_date, :initial_salary
       )
     end

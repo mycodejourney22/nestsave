@@ -33,13 +33,18 @@
         <% @teams.each do |team| %>
           <tr class="hover:bg-gray-50/60 transition-colors">
             <td class="px-5 py-4">
-              <p class="text-sm font-semibold text-gray-900"><%= team.name %></p>
-              <% if team.description.present? %>
-                <p class="text-xs text-gray-400 mt-0.5 truncate max-w-xs"><%= team.description %></p>
+              <%= link_to admin_team_path(@current_company.slug, team), class: "group" do %>
+                <p class="text-sm font-semibold text-gray-900 group-hover:text-primary-600 transition-colors"><%= team.name %></p>
+                <% if team.description.present? %>
+                  <p class="text-xs text-gray-400 mt-0.5 truncate max-w-xs"><%= team.description %></p>
+                <% end %>
               <% end %>
             </td>
             <td class="px-5 py-4 text-sm text-gray-600 hidden sm:table-cell">
-              <%= team.employee_profiles.count %>
+              <%= link_to admin_team_path(@current_company.slug, team),
+                    class: "hover:text-primary-600 transition-colors" do %>
+                <%= team.employee_profiles.count %> member<%= team.employee_profiles.count == 1 ? "" : "s" %>
+              <% end %>
             </td>
             <td class="px-5 py-4 text-sm text-gray-600 hidden md:table-cell">
               <%= team.manager&.full_name || "—" %>

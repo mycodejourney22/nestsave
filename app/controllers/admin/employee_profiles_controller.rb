@@ -35,9 +35,12 @@ module Admin
       @leave_requests   = @profile.leave_requests.includes(:leave_type).order(requested_at: :desc)
     end
 
-    def edit; end
+    def edit
+      @teams = @current_company.teams.active.order(:name)
+    end
 
     def update
+      @teams = @current_company.teams.active.order(:name)
       if @profile.update(profile_params)
         redirect_to admin_employee_profile_path(@current_company.slug, @profile),
                     notice: "Profile updated."
@@ -59,7 +62,7 @@ module Admin
     def profile_params
       params.require(:employee_profile).permit(
         :preferred_name, :gender, :date_of_birth, :phone, :personal_email,
-        :employment_type, :department_id, :job_title,
+        :employment_type, :department_id, :team_id, :job_title,
         :employment_start_date, :employment_end_date,
         :right_to_work_status, :right_to_work_expiry,
         :address_line_1, :address_line_2, :city, :postcode, :country, :nationality

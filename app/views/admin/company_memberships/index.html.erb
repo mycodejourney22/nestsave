@@ -29,6 +29,7 @@
         <tr class="bg-gray-50/70 border-b border-gray-100">
           <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400">Member</th>
           <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden sm:table-cell">Role</th>
+          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden lg:table-cell">Team</th>
           <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden md:table-cell">Salary</th>
           <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden sm:table-cell">Status</th>
           <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden md:table-cell">Joined</th>
@@ -54,6 +55,9 @@
             </td>
             <td class="px-5 py-4 hidden sm:table-cell">
               <span class="text-xs font-medium text-gray-600 capitalize"><%= m.role.humanize %></span>
+            </td>
+            <td class="px-5 py-4 text-sm text-gray-600 hidden lg:table-cell">
+              <%= m.employee_profile&.team&.name || "Company-wide" %>
             </td>
             <td class="px-5 py-4 text-sm font-semibold text-gray-900 hidden md:table-cell">
               <% if m.pending? %>
