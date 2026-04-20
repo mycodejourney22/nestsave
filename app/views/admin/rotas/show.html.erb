@@ -1,0 +1,175 @@
+<%# Admin — Rota Show %>
+
+<div class="flex items-center gap-2 text-sm text-gray-400 mb-7">
+  <%= link_to "Rotas", admin_rotas_path(@current_company.slug), class: "hover:text-gray-600 transition-colors" %>
+  <span>/</span>
+  <span class="text-gray-700 font-medium"><%= @rota.team.name %> — <%= @rota.week_label %></span>
+</div>
+
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h1 class="text-2xl font-semibold text-gray-900"><%= @rota.team.name %></h1>
+    <p class="text-gray-500 text-sm mt-1"><%= @rota.week_label %></p>
+  </div>
+  <div class="flex items-center gap-3">
+    <% if @rota.published? %>
+      <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20">Published</span>
+    <% else %>
+      <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-600/20">Draft</span>
+      <%= button_to "Publish rota",
+            publish_admin_rota_path(@current_company.slug, @rota),
+            method: :patch,
+            data: { turbo_confirm: "Publish this rota? Team members will be notified by email." },
+            class: "inline-flex items-center gap-1.5 bg-primary-500 hover:bg-primary-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors" %>
+    <% end %>
+  </div>
+</div>
+
+<% if notice.present? %>
+  <div class="mb-5 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-700"><%= notice %></div>
+<% end %>
+<% if alert.present? %>
+  <div class="mb-5 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700"><%= alert %></div>
+<% end %>
+
+<div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
+  <% if @members.empty? %>
+    <div class="flex flex-col items-center justify-center py-20 text-center px-8">
+      <p class="text-sm font-medium text-gray-700">No team members</p>
+      <p class="text-xs text-gray-400 mt-1">Add employees to this team first</p>
+    </div>
+  <% else %>
+    <table class="min-w-full">
+      <thead>
+        <tr class="bg-gray-50/70 border-b border-gray-100">
+          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 min-w-[160px]">Employee</th>
+          <% @days.each do |day| %>
+            <th class="text-center px-3 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 min-w-[110px] <%= day.saturday? || day.sunday? ? "bg-gray-50" : "" %>">
+              <span class="block"><%= day.strftime("%a") %></span>
+              <span class="block font-normal text-gray-400 normal-case tracking-normal"><%= day.strftime("%-d %b") %></span>
+            </th>
+          <% end %>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <% @members.each do |member| %>
+          <% profile_entries = @entries[member.id] || [] %>
+          <% entries_by_date = profile_entries.index_by { |e| e.work_date } %>
+          <tr class="hover:bg-gray-50/60 transition-colors">
+            <td class="px-5 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">
+              <%= member.full_name %>
+            </td>
+            <% @days.each do |day| %>
+              <% entry = entries_by_date[day] %>
+              <td class="px-3 py-4 text-center <%= day.saturday? || day.sunday? ? "bg-gray-50/50" : "" %>">
+                <% if entry %>
+                  <div class="text-xs text-emerald-700 font-medium">
+                    <%= entry.start_time&.strftime("%H:%M") %> – <%= entry.end_time&.strftime("%H:%M") %>
+                  </div>
+                  <% if entry.notes.present? %>
+                    <div class="text-xs text-gray-400 mt-0.5 truncate max-w-[90px]" title="<%= entry.notes %>"><%= entry.notes %></div>
+                  <% end %>
+                  <% unless @rota.published? %>
+                    <div class="mt-1">
+                      <%= button_to "×",
+                            admin_rota_rota_entry_path(@current_company.slug, @rota, entry),
+                            method: :delete,
+                            class: "text-red-400 hover:text-red-600 text-xs font-bold leading-none" %>
+                    </div>
+                  <% end %>
+                <% elsif !@rota.published? %>
+                  <button type="button"
+                    class="text-gray-300 hover:text-gray-500 text-xs font-medium transition-colors js-add-entry"
+                    data-profile="<%= member.id %>"
+                    data-date="<%= day %>"
+                    data-rota="<%= @rota.id %>">
+                    + Add
+                  </button>
+                <% else %>
+                  <span class="text-gray-200 text-xs">—</span>
+                <% end %>
+              </td>
+            <% end %>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+</div>
+
+<% unless @rota.published? %>
+  <%# Inline entry modal %>
+  <div id="entry-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4">
+      <h3 class="text-base font-semibold text-gray-900 mb-4">Add shift</h3>
+      <form id="entry-form">
+        <input type="hidden" id="entry-profile-id" name="rota_entry[employee_profile_id]">
+        <input type="hidden" id="entry-date" name="rota_entry[work_date]">
+        <div class="space-y-4">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Start</label>
+              <input type="time" name="rota_entry[start_time]" id="entry-start"
+                class="block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">End</label>
+              <input type="time" name="rota_entry[end_time]" id="entry-end"
+                class="block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Notes (optional)</label>
+            <input type="text" name="rota_entry[notes]" placeholder="e.g. On-call"
+              class="block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+          </div>
+        </div>
+        <div class="flex items-center gap-3 mt-5">
+          <button type="submit" class="flex-1 bg-primary-500 hover:bg-primary-600 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors">
+            Save shift
+          </button>
+          <button type="button" id="entry-cancel" class="flex-1 border border-gray-300 text-gray-600 font-medium py-2.5 rounded-xl text-sm hover:bg-gray-50 transition-colors">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const modal = document.getElementById("entry-modal");
+    const form  = document.getElementById("entry-form");
+    let rotaId;
+
+    document.querySelectorAll(".js-add-entry").forEach(btn => {
+      btn.addEventListener("click", function() {
+        document.getElementById("entry-profile-id").value = this.dataset.profile;
+        document.getElementById("entry-date").value = this.dataset.date;
+        rotaId = this.dataset.rota;
+        modal.classList.remove("hidden");
+      });
+    });
+
+    document.getElementById("entry-cancel")?.addEventListener("click", () => modal.classList.add("hidden"));
+    modal?.addEventListener("click", e => { if (e.target === modal) modal.classList.add("hidden"); });
+
+    form?.addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const data = new FormData(form);
+      const slug = "<%= @current_company.slug %>";
+      const token = document.querySelector('meta[name="csrf-token"]')?.content;
+      const res = await fetch(`/c/${slug}/admin/rotas/${rotaId}/rota_entries`, {
+        method: "POST",
+        headers: { "X-CSRF-Token": token, "Accept": "application/json" },
+        body: data
+      });
+      if (res.ok) {
+        modal.classList.add("hidden");
+        window.location.reload();
+      } else {
+        const json = await res.json();
+        alert(json.errors?.join(", ") || "Could not save shift.");
+      }
+    });
+  </script>
+<% end %>

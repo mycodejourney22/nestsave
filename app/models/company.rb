@@ -1,7 +1,9 @@
 class Company < ApplicationRecord
   has_many :company_memberships, -> { kept }, dependent: :destroy
   has_many :users, through: :company_memberships
-  has_many :departments,         -> { kept }, dependent: :destroy
+  has_many :departments,  -> { kept }, dependent: :destroy
+  has_many :teams,        -> { kept }, dependent: :destroy
+  has_many :leave_types,  dependent: :destroy
 
   validates :name,          presence: true
   validates :slug,          presence: true, uniqueness: true,

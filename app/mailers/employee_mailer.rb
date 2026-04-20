@@ -111,6 +111,37 @@ class EmployeeMailer < ApplicationMailer
          subject: "[NestSave] Salary advance fully repaid — well done!"
   end
 
+  def leave_approved(user, request)
+    @user    = user
+    @request = request
+    @company = request.employee_profile.company_membership.company
+    @url     = employee_leave_requests_url(company_slug: @company.slug)
+
+    mail to:      user.email,
+         subject: "[NestSave] Leave request approved — #{request.start_date.strftime('%-d %b')} to #{request.end_date.strftime('%-d %b %Y')}"
+  end
+
+  def leave_declined(user, request, note = nil)
+    @user    = user
+    @request = request
+    @note    = note
+    @company = request.employee_profile.company_membership.company
+    @url     = new_employee_leave_request_url(company_slug: @company.slug)
+
+    mail to:      user.email,
+         subject: "[NestSave] Leave request update — #{request.start_date.strftime('%-d %b')} to #{request.end_date.strftime('%-d %b %Y')}"
+  end
+
+  def rota_published(user, rota)
+    @user  = user
+    @rota  = rota
+    @company = rota.team.company
+    @url   = employee_rota_url(company_slug: @company.slug, id: rota.id)
+
+    mail to:      user.email,
+         subject: "[NestSave] Your rota for #{rota.week_label} is now live"
+  end
+
   private
 
   def formatted_currency(amount)

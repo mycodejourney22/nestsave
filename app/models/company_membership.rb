@@ -2,6 +2,7 @@ class CompanyMembership < ApplicationRecord
   belongs_to :user, optional: true
   belongs_to :company
   belongs_to :inviter, class_name: "User", foreign_key: :invited_by, optional: true
+  belongs_to :team, optional: true
 
   has_one  :employee_profile,   dependent: :destroy
   has_many :savings_plans,       -> { kept }, dependent: :destroy
@@ -9,14 +10,14 @@ class CompanyMembership < ApplicationRecord
   has_many :withdrawal_requests, dependent: :destroy
   has_many :transactions,        dependent: :destroy
 
-  ROLES    = %w[employee studio_manager hr_admin super_admin].freeze
+  ROLES    = %w[employee team_manager hr_admin super_admin].freeze
   STATUSES = %w[active suspended left pending].freeze
 
   enum :role, {
-    employee:       "employee",
-    studio_manager: "studio_manager",
-    hr_admin:       "hr_admin",
-    super_admin:    "super_admin"
+    employee:     "employee",
+    team_manager: "team_manager",
+    hr_admin:     "hr_admin",
+    super_admin:  "super_admin"
   }
 
   enum :status, { active: "active", suspended: "suspended", left: "left", pending: "pending" }
@@ -31,6 +32,7 @@ class CompanyMembership < ApplicationRecord
 
   scope :active,          -> { kept.where(status: "active") }
   scope :hr_admins,       -> { kept.where(role: "hr_admin") }
+  scope :team_managers,   -> { kept.where(role: "team_manager") }
   scope :pending_invites, -> { kept.where(status: "pending") }
   scope :cancellable,     -> { kept.where(status: "pending") }
 
@@ -40,8 +42,8 @@ class CompanyMembership < ApplicationRecord
     hr_admin? || super_admin?
   end
 
-  def studio_manager_or_above?
-    studio_manager? || hr_admin? || super_admin?
+  def team_manager_or_above?
+    team_manager? || hr_admin? || super_admin?
   end
 
   def can_access_hr?
@@ -52,8 +54,8 @@ class CompanyMembership < ApplicationRecord
     hr_or_above?
   end
 
-  def can_access_studio?
-    studio_manager_or_above?
+  def can_access_team?
+    team_manager_or_above?
   end
 
   def can_manage_company?

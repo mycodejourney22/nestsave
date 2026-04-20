@@ -19,8 +19,11 @@ Rails.application.routes.draw do
         member { patch :mark_read }
       end
 
-      get "profile",   to: "profiles#show",    as: :profile
-      get "documents", to: "documents#index",  as: :documents
+      get "profile",   to: "profiles#show",   as: :profile
+      get "documents", to: "documents#index", as: :documents
+
+      resources :leave_requests, only: [:index, :new, :create, :destroy]
+      resources :rotas,          only: [:index, :show]
     end
 
     namespace :admin do
@@ -57,6 +60,24 @@ Rails.application.routes.draw do
 
       resources :company_memberships, only: [:index, :new, :create, :edit, :update, :destroy]
       resources :departments,         only: [:index, :new, :create, :edit, :update, :destroy]
+      resources :teams,               only: [:index, :new, :create, :edit, :update, :destroy]
+      resources :leave_types,         only: [:index, :new, :create, :edit, :update]
+
+      resources :leave_requests, only: [:index] do
+        member do
+          patch :approve
+          patch :decline
+        end
+      end
+
+      resources :leave_balances, only: [] do
+        member { patch :override }
+      end
+
+      resources :rotas, only: [:index, :new, :create, :show] do
+        member { patch :publish }
+        resources :rota_entries, only: [:create, :update, :destroy]
+      end
 
       resources :employee_profiles, only: [:index, :show, :edit, :update] do
         resources :employment_histories, only: [:new, :create, :edit, :update, :destroy]

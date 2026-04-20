@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_20_110000) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_21_000008) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -103,12 +103,14 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_20_110000) do
     t.string "invitation_token"
     t.datetime "invitation_sent_at"
     t.datetime "invitation_accepted_at"
+    t.uuid "team_id"
     t.index ["company_id"], name: "index_company_memberships_on_company_id"
     t.index ["deleted_at"], name: "index_company_memberships_on_deleted_at"
     t.index ["invitation_token"], name: "index_company_memberships_on_invitation_token", unique: true, where: "(invitation_token IS NOT NULL)"
     t.index ["invited_email"], name: "index_company_memberships_on_invited_email"
     t.index ["role"], name: "index_company_memberships_on_role"
     t.index ["status"], name: "index_company_memberships_on_status"
+    t.index ["team_id"], name: "index_company_memberships_on_team_id"
     t.index ["user_id", "company_id"], name: "index_company_memberships_on_user_id_and_company_id", unique: true, where: "(deleted_at IS NULL)"
     t.index ["user_id"], name: "index_company_memberships_on_user_id"
   end
@@ -175,10 +177,12 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_20_110000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.uuid "department_id"
+    t.uuid "team_id"
     t.index ["company_membership_id"], name: "index_employee_profiles_on_company_membership_id", unique: true
     t.index ["deleted_at"], name: "index_employee_profiles_on_deleted_at"
     t.index ["department_id"], name: "index_employee_profiles_on_department_id"
     t.index ["employee_number"], name: "index_employee_profiles_on_employee_number", unique: true
+    t.index ["team_id"], name: "index_employee_profiles_on_team_id"
   end
 
   create_table "employee_references", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -212,6 +216,59 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_20_110000) do
     t.index ["employee_profile_id"], name: "index_employment_histories_on_employee_profile_id"
   end
 
+  create_table "leave_balances", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "employee_profile_id", null: false
+    t.uuid "leave_type_id", null: false
+    t.integer "year", null: false
+    t.decimal "total_days", precision: 5, scale: 1, default: "0.0", null: false
+    t.decimal "accrued_days", precision: 5, scale: 1, default: "0.0", null: false
+    t.decimal "used_days", precision: 5, scale: 1, default: "0.0", null: false
+    t.decimal "override_days", precision: 5, scale: 1, default: "0.0", null: false
+    t.uuid "overridden_by"
+    t.datetime "overridden_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["employee_profile_id", "leave_type_id", "year"], name: "idx_leave_balances_unique", unique: true
+    t.index ["employee_profile_id"], name: "index_leave_balances_on_employee_profile_id"
+    t.index ["leave_type_id"], name: "index_leave_balances_on_leave_type_id"
+  end
+
+  create_table "leave_requests", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "employee_profile_id", null: false
+    t.uuid "leave_type_id", null: false
+    t.uuid "leave_balance_id"
+    t.date "start_date", null: false
+    t.date "end_date", null: false
+    t.integer "total_days", null: false
+    t.text "reason"
+    t.string "status", default: "pending", null: false
+    t.uuid "reviewed_by"
+    t.text "review_note"
+    t.datetime "requested_at", null: false
+    t.datetime "reviewed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["employee_profile_id"], name: "index_leave_requests_on_employee_profile_id"
+    t.index ["leave_balance_id"], name: "index_leave_requests_on_leave_balance_id"
+    t.index ["leave_type_id"], name: "index_leave_requests_on_leave_type_id"
+    t.index ["start_date"], name: "index_leave_requests_on_start_date"
+    t.index ["status"], name: "index_leave_requests_on_status"
+  end
+
+  create_table "leave_types", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "company_id", null: false
+    t.string "name", null: false
+    t.string "category", null: false
+    t.integer "default_days", default: 0, null: false
+    t.boolean "requires_balance", default: true, null: false
+    t.boolean "accrues_monthly", default: false, null: false
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["company_id", "name"], name: "index_leave_types_on_company_id_and_name", unique: true
+    t.index ["company_id"], name: "index_leave_types_on_company_id"
+  end
+
   create_table "notifications", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "user_id", null: false
     t.string "notifiable_type", null: false
@@ -228,6 +285,33 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_20_110000) do
     t.index ["sent"], name: "index_notifications_on_sent"
     t.index ["user_id", "read"], name: "index_notifications_on_user_id_and_read"
     t.index ["user_id"], name: "index_notifications_on_user_id"
+  end
+
+  create_table "rota_entries", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "rota_id", null: false
+    t.uuid "employee_profile_id", null: false
+    t.date "work_date", null: false
+    t.time "start_time"
+    t.time "end_time"
+    t.string "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["employee_profile_id"], name: "index_rota_entries_on_employee_profile_id"
+    t.index ["rota_id", "employee_profile_id", "work_date"], name: "idx_rota_entries_unique", unique: true
+    t.index ["rota_id"], name: "index_rota_entries_on_rota_id"
+  end
+
+  create_table "rotas", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "team_id", null: false
+    t.uuid "created_by", null: false
+    t.date "week_start", null: false
+    t.date "week_end", null: false
+    t.string "status", default: "draft", null: false
+    t.datetime "published_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["team_id", "week_start"], name: "index_rotas_on_team_id_and_week_start", unique: true
+    t.index ["team_id"], name: "index_rotas_on_team_id"
   end
 
   create_table "salary_advances", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -281,6 +365,19 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_20_110000) do
     t.index ["company_membership_id"], name: "index_savings_plans_on_company_membership_id"
     t.index ["deleted_at"], name: "index_savings_plans_on_deleted_at"
     t.index ["status"], name: "index_savings_plans_on_status"
+  end
+
+  create_table "teams", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "company_id", null: false
+    t.string "name", null: false
+    t.string "description"
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.datetime "deleted_at"
+    t.index ["company_id", "name"], name: "index_teams_on_company_id_and_name", unique: true, where: "(deleted_at IS NULL)"
+    t.index ["company_id"], name: "index_teams_on_company_id"
+    t.index ["deleted_at"], name: "index_teams_on_deleted_at"
   end
 
   create_table "transactions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -343,6 +440,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_20_110000) do
   add_foreign_key "bank_details", "employee_profiles"
   add_foreign_key "bank_details", "users", column: "recorded_by"
   add_foreign_key "company_memberships", "companies"
+  add_foreign_key "company_memberships", "teams"
   add_foreign_key "company_memberships", "users"
   add_foreign_key "company_memberships", "users", column: "invited_by"
   add_foreign_key "departments", "companies"
@@ -351,15 +449,29 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_20_110000) do
   add_foreign_key "emergency_contacts", "employee_profiles"
   add_foreign_key "employee_profiles", "company_memberships"
   add_foreign_key "employee_profiles", "departments"
+  add_foreign_key "employee_profiles", "teams"
   add_foreign_key "employee_references", "employee_profiles"
   add_foreign_key "employment_histories", "employee_profiles"
+  add_foreign_key "leave_balances", "employee_profiles"
+  add_foreign_key "leave_balances", "leave_types"
+  add_foreign_key "leave_balances", "users", column: "overridden_by"
+  add_foreign_key "leave_requests", "employee_profiles"
+  add_foreign_key "leave_requests", "leave_balances"
+  add_foreign_key "leave_requests", "leave_types"
+  add_foreign_key "leave_requests", "users", column: "reviewed_by"
+  add_foreign_key "leave_types", "companies"
   add_foreign_key "notifications", "users"
+  add_foreign_key "rota_entries", "employee_profiles"
+  add_foreign_key "rota_entries", "rotas"
+  add_foreign_key "rotas", "teams"
+  add_foreign_key "rotas", "users", column: "created_by"
   add_foreign_key "salary_advances", "company_memberships"
   add_foreign_key "salary_advances", "users", column: "reviewed_by"
   add_foreign_key "salary_histories", "employee_profiles"
   add_foreign_key "salary_histories", "users", column: "changed_by"
   add_foreign_key "savings_plans", "company_memberships"
   add_foreign_key "savings_plans", "users", column: "approved_by"
+  add_foreign_key "teams", "companies"
   add_foreign_key "transactions", "company_memberships"
   add_foreign_key "withdrawal_requests", "company_memberships"
   add_foreign_key "withdrawal_requests", "savings_plans"

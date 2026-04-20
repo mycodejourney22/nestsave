@@ -122,6 +122,69 @@ ActiveRecord::Base.transaction do
     received_on:      Date.new(2022, 2, 28)
   )
 
+  # ── Teams ─────────────────────────────────────────────────────────────────
+  eng_team = Team.create!(
+    company:     company,
+    name:        "Engineering",
+    description: "Product engineers and platform team",
+    active:      true
+  )
+
+  Team.create!(
+    company:     company,
+    name:        "Operations",
+    description: "Finance, HR and business operations",
+    active:      true
+  )
+
+  # Assign Seun to Engineering team
+  seun_profile.update!(team: eng_team)
+
+  # ── Leave types ────────────────────────────────────────────────────────────
+  annual_leave = LeaveType.create!(
+    company:         company,
+    name:            "Annual Leave",
+    category:        :annual,
+    default_days:    21,
+    requires_balance: true,
+    accrues_monthly: true,
+    active:          true
+  )
+
+  LeaveType.create!(
+    company:         company,
+    name:            "Sick Leave",
+    category:        :sick,
+    default_days:    0,
+    requires_balance: false,
+    accrues_monthly: false,
+    active:          true
+  )
+
+  LeaveType.create!(
+    company:         company,
+    name:            "Maternity Leave",
+    category:        :maternity,
+    default_days:    90,
+    requires_balance: true,
+    accrues_monthly: false,
+    active:          true
+  )
+
+  # ── Leave balance for Seun (current year, pro-rated) ──────────────────────
+  months_worked = Date.current.month
+  accrued = (annual_leave.default_days.to_f / 12 * months_worked).round(1)
+
+  LeaveBalance.create!(
+    employee_profile: seun_profile,
+    leave_type:       annual_leave,
+    year:             Date.current.year,
+    total_days:       annual_leave.default_days,
+    accrued_days:     accrued,
+    used_days:        0,
+    override_days:    0
+  )
+
   puts "Seeded: #{company.name}"
   puts "  Currency: #{company.currency_symbol} (#{company.currency})"
   puts "  Depts:    #{Department.where(company: company).pluck(:name).join(", ")}"

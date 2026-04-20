@@ -73,6 +73,7 @@
       ["overview",         "Overview"],
       ["work_history",     "Work history"],
       ["salary_history",   "Salary history"],
+      ["leave",            "Leave"],
       ["documents",        "Documents"],
       ["bank_details",     "Bank details"],
       ["references",       "References"],
@@ -526,6 +527,130 @@
       <% end %>
     </div>
   <% end %>
+
+<% elsif active_tab == "leave" %>
+  <%# Leave balances %>
+  <div class="mb-8">
+    <h2 class="text-base font-semibold text-gray-900 mb-4">Leave Balances (<%= Date.current.year %>)</h2>
+    <% if @leave_balances.any? %>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-5">
+        <% @leave_balances.each do |bal| %>
+          <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+            <p class="text-xs font-medium text-gray-500 mb-2"><%= bal.leave_type.name %></p>
+            <% if bal.leave_type.requires_balance? %>
+              <p class="text-2xl font-bold text-gray-900"><%= bal.remaining_days.to_i %><span class="text-sm font-normal text-gray-400 ml-1">/ <%= bal.total_days.to_i %></span></p>
+              <p class="text-xs text-gray-400 mt-1">days remaining</p>
+              <button type="button"
+                class="inline-block mt-2 text-xs font-medium text-primary-600 hover:text-primary-700 js-override-btn"
+                data-balance-id="<%= bal.id %>"
+                data-remaining="<%= bal.remaining_days %>"
+                data-name="<%= bal.leave_type.name %>">Override</button>
+            <% else %>
+              <p class="text-2xl font-bold text-gray-900">∞</p>
+              <p class="text-xs text-gray-400 mt-1">unlimited</p>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm flex items-center justify-center py-10 text-center mb-5">
+        <p class="text-sm text-gray-400">No leave balances for this year.</p>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Leave history %>
+  <div>
+    <h2 class="text-base font-semibold text-gray-900 mb-4">Leave Requests</h2>
+    <% if @leave_requests.empty? %>
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm flex items-center justify-center py-10 text-center">
+        <p class="text-sm text-gray-400">No leave requests.</p>
+      </div>
+    <% else %>
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <table class="min-w-full">
+          <thead>
+            <tr class="bg-gray-50/70 border-b border-gray-100">
+              <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400">Leave type</th>
+              <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden sm:table-cell">Dates</th>
+              <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden sm:table-cell">Days</th>
+              <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <% @leave_requests.each do |req| %>
+              <tr class="hover:bg-gray-50/60 transition-colors">
+                <td class="px-5 py-4 text-sm font-medium text-gray-900"><%= req.leave_type.name %></td>
+                <td class="px-5 py-4 text-sm text-gray-600 hidden sm:table-cell">
+                  <%= req.start_date.strftime("%-d %b") %> – <%= req.end_date.strftime("%-d %b %Y") %>
+                </td>
+                <td class="px-5 py-4 text-sm text-gray-600 hidden sm:table-cell">
+                  <%= req.total_days %> day<%= req.total_days == 1 ? "" : "s" %>
+                </td>
+                <td class="px-5 py-4">
+                  <% status_colors = { "pending" => "bg-amber-50 text-amber-700 ring-amber-600/20", "approved" => "bg-emerald-50 text-emerald-700 ring-emerald-600/20", "declined" => "bg-red-50 text-red-700 ring-red-600/20", "cancelled" => "bg-gray-100 text-gray-500 ring-gray-500/20" } %>
+                  <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset <%= status_colors.fetch(req.status, "bg-gray-100 text-gray-500 ring-gray-500/20") %>">
+                    <%= req.status.capitalize %>
+                  </span>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Override modal %>
+  <div id="override-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+    <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4">
+      <h3 class="text-base font-semibold text-gray-900 mb-1">Override leave balance</h3>
+      <p id="override-label" class="text-sm text-gray-500 mb-4"></p>
+      <%= form_with url: "#", method: :patch, id: "override-form" do |f| %>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">New remaining days</label>
+            <input type="number" name="remaining_days" id="override-days" min="0" step="0.5"
+              class="block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Reason (optional)</label>
+            <input type="text" name="reason" placeholder="e.g. Carried over from last year"
+              class="block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+          </div>
+        </div>
+        <input type="hidden" name="_method" value="patch">
+        <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+        <div class="flex items-center gap-3 mt-5">
+          <button type="submit" class="flex-1 bg-primary-500 hover:bg-primary-600 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors">
+            Save
+          </button>
+          <button type="button" id="override-cancel" class="flex-1 border border-gray-300 text-gray-600 font-medium py-2.5 rounded-xl text-sm hover:bg-gray-50 transition-colors">
+            Cancel
+          </button>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <script>
+    const overrideModal = document.getElementById("override-modal");
+    const overrideForm  = document.getElementById("override-form");
+    const slug = "<%= @current_company.slug %>";
+
+    document.querySelectorAll(".js-override-btn").forEach(btn => {
+      btn.addEventListener("click", function() {
+        const balId = this.dataset.balanceId;
+        document.getElementById("override-label").textContent = this.dataset.name;
+        document.getElementById("override-days").value = this.dataset.remaining;
+        overrideForm.action = `/c/${slug}/admin/leave_balances/${balId}/override`;
+        overrideModal.classList.remove("hidden");
+      });
+    });
+
+    document.getElementById("override-cancel")?.addEventListener("click", () => overrideModal.classList.add("hidden"));
+    overrideModal?.addEventListener("click", e => { if (e.target === overrideModal) overrideModal.classList.add("hidden"); });
+  </script>
 
 <% elsif active_tab == "savings_advances" %>
   <%# Savings plans %>

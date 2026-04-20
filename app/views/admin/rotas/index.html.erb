@@ -1,0 +1,54 @@
+<%# Admin — Rotas %>
+
+<div class="flex items-center justify-between mb-7">
+  <div>
+    <h1 class="text-2xl font-semibold text-gray-900">Rotas</h1>
+    <p class="text-gray-500 text-sm mt-1">Weekly schedules for your teams</p>
+  </div>
+  <%= link_to new_admin_rota_path(@current_company.slug),
+        class: "inline-flex items-center gap-1.5 bg-primary-500 hover:bg-primary-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors" do %>
+    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+    New rota
+  <% end %>
+</div>
+
+<div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+  <% if @rotas.empty? %>
+    <div class="flex flex-col items-center justify-center py-20 text-center px-8">
+      <p class="text-sm font-medium text-gray-700">No rotas yet</p>
+      <p class="text-xs text-gray-400 mt-1">Create a weekly schedule for a team</p>
+    </div>
+  <% else %>
+    <table class="min-w-full">
+      <thead>
+        <tr class="bg-gray-50/70 border-b border-gray-100">
+          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400">Team</th>
+          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400">Week</th>
+          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden sm:table-cell">Entries</th>
+          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400">Status</th>
+          <th class="text-right px-5 py-3.5"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <% @rotas.each do |rota| %>
+          <tr class="hover:bg-gray-50/60 transition-colors">
+            <td class="px-5 py-4 text-sm font-medium text-gray-900"><%= rota.team.name %></td>
+            <td class="px-5 py-4 text-sm text-gray-600"><%= rota.week_label %></td>
+            <td class="px-5 py-4 text-sm text-gray-600 hidden sm:table-cell"><%= rota.rota_entries.size %></td>
+            <td class="px-5 py-4">
+              <% if rota.published? %>
+                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20">Published</span>
+              <% else %>
+                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-600/20">Draft</span>
+              <% end %>
+            </td>
+            <td class="px-5 py-4 text-right">
+              <%= link_to "View", admin_rota_path(@current_company.slug, rota),
+                    class: "text-xs font-medium text-gray-500 hover:text-gray-700" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+</div>

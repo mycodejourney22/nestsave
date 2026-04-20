@@ -1,0 +1,65 @@
+<%# Employee — My Rotas %>
+
+<div class="mb-7">
+  <h1 class="text-2xl font-semibold text-gray-900">My Rota</h1>
+  <p class="text-gray-500 text-sm mt-1">Your weekly schedules</p>
+</div>
+
+<% if @rotas.empty? %>
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm">
+    <div class="flex flex-col items-center justify-center py-20 text-center px-8">
+      <% if @profile.team.nil? %>
+        <p class="text-sm font-medium text-gray-700">You're not assigned to a team yet</p>
+        <p class="text-xs text-gray-400 mt-1">Ask your HR admin to assign you to a team</p>
+      <% else %>
+        <p class="text-sm font-medium text-gray-700">No rotas published yet</p>
+        <p class="text-xs text-gray-400 mt-1">Your schedule will appear here once published</p>
+      <% end %>
+    </div>
+  </div>
+<% else %>
+  <% if @current_rota %>
+    <div class="mb-5 rounded-xl bg-primary-50 border border-primary-200 px-4 py-3 flex items-center justify-between">
+      <div>
+        <p class="text-sm font-semibold text-primary-700">Current week: <%= @current_rota.week_label %></p>
+        <p class="text-xs text-primary-500 mt-0.5">Your schedule is live</p>
+      </div>
+      <%= link_to "View schedule →", employee_rota_path(@current_company.slug, @current_rota),
+            class: "text-sm font-semibold text-primary-700 hover:text-primary-800" %>
+    </div>
+  <% end %>
+
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <table class="min-w-full">
+      <thead>
+        <tr class="bg-gray-50/70 border-b border-gray-100">
+          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400">Week</th>
+          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden sm:table-cell">Team</th>
+          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden sm:table-cell">My shifts</th>
+          <th class="text-right px-5 py-3.5"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <% @rotas.each do |rota| %>
+          <% is_current = rota == @current_rota %>
+          <tr class="hover:bg-gray-50/60 transition-colors <%= is_current ? "bg-primary-50/30" : "" %>">
+            <td class="px-5 py-4">
+              <p class="text-sm font-medium text-gray-900"><%= rota.week_label %></p>
+              <% if is_current %>
+                <span class="text-xs text-primary-600 font-medium">Current week</span>
+              <% end %>
+            </td>
+            <td class="px-5 py-4 text-sm text-gray-600 hidden sm:table-cell"><%= rota.team.name %></td>
+            <td class="px-5 py-4 text-sm text-gray-600 hidden sm:table-cell">
+              <%= rota.rota_entries.where(employee_profile: @profile).count %> shift<%= rota.rota_entries.where(employee_profile: @profile).count == 1 ? "" : "s" %>
+            </td>
+            <td class="px-5 py-4 text-right">
+              <%= link_to "View", employee_rota_path(@current_company.slug, rota),
+                    class: "text-xs font-medium text-gray-500 hover:text-gray-700" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% end %>

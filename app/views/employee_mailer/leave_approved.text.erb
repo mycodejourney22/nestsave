@@ -1,0 +1,14 @@
+Leave approved — <%= @request.leave_type.name %>
+
+Hi <%= @user.full_name.split.first %>,
+
+Your leave request has been approved.
+
+Leave type: <%= @request.leave_type.name %>
+Start date:  <%= @request.start_date.strftime("%-d %B %Y") %>
+End date:    <%= @request.end_date.strftime("%-d %B %Y") %>
+Total days:  <%= @request.total_days %> working day<%= @request.total_days == 1 ? "" : "s" %>
+
+View your leave: <%= @url %>
+
+The NestSave Team

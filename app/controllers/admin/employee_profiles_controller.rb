@@ -31,6 +31,8 @@ module Admin
       @references       = @profile.employee_references.order(created_at: :asc)
       @savings_plans    = @membership.savings_plans.order(created_at: :desc)
       @advances         = @membership.salary_advances.kept.order(applied_at: :desc)
+      @leave_balances   = LeaveBalance.for_employee_this_year(@profile).includes(:leave_type)
+      @leave_requests   = @profile.leave_requests.includes(:leave_type).order(requested_at: :desc)
     end
 
     def edit; end

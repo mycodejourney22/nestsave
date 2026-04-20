@@ -1,0 +1,86 @@
+<div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+  <%= form_with model: [@current_company, leave_type],
+        url: leave_type.new_record? ? admin_leave_types_path(@current_company.slug) : admin_leave_type_path(@current_company.slug, leave_type) do |f| %>
+
+    <% if leave_type.errors.any? %>
+      <div class="mb-5 rounded-xl bg-red-50 border border-red-200 px-4 py-3">
+        <ul class="list-disc list-inside space-y-0.5">
+          <% leave_type.errors.full_messages.each do |msg| %>
+            <li class="text-sm text-red-600"><%= msg %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="space-y-5">
+      <div>
+        <%= f.label :name, "Name", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+        <%= f.text_field :name, placeholder: "e.g. Annual Leave",
+              class: "block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition" %>
+      </div>
+
+      <div>
+        <%= f.label :category, "Category", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+        <%= f.select :category,
+              [["Annual", "annual"], ["Sick", "sick"], ["Maternity", "maternity"], ["Other", "other"]],
+              {},
+              class: "block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition" %>
+      </div>
+
+      <div class="flex items-start gap-3 p-4 rounded-xl bg-gray-50 border border-gray-200">
+        <div class="flex items-center h-5 mt-0.5">
+          <%= f.check_box :requires_balance, id: "requires_balance_toggle",
+                class: "h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500" %>
+        </div>
+        <div>
+          <%= f.label :requires_balance, "Requires a balance (limited days)", class: "text-sm font-medium text-gray-700" %>
+          <p class="text-xs text-gray-400 mt-0.5">Uncheck for unlimited leave (e.g. sick leave with no cap)</p>
+        </div>
+      </div>
+
+      <div id="balance_fields">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <%= f.label :default_days, "Default days per year", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+            <%= f.number_field :default_days, min: 0, step: 0.5, placeholder: "21",
+                  class: "block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition" %>
+          </div>
+          <div class="flex items-end pb-0.5">
+            <div class="flex items-start gap-3 p-3 rounded-xl bg-gray-50 border border-gray-200 w-full">
+              <div class="flex items-center h-5 mt-0.5">
+                <%= f.check_box :accrues_monthly,
+                      class: "h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500" %>
+              </div>
+              <div>
+                <%= f.label :accrues_monthly, "Accrues monthly", class: "text-sm font-medium text-gray-700" %>
+                <p class="text-xs text-gray-400 mt-0.5">Days added each month</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <%= f.check_box :active, class: "h-4 w-4 rounded border-gray-300 text-primary-500 focus:ring-primary-500" %>
+        <%= f.label :active, "Active", class: "text-sm font-medium text-gray-700" %>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3 mt-6">
+      <%= f.submit leave_type.new_record? ? "Create leave type" : "Save changes",
+            class: "bg-primary-500 hover:bg-primary-600 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors cursor-pointer" %>
+      <%= link_to "Cancel", admin_leave_types_path(@current_company.slug),
+            class: "text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors px-2 py-2" %>
+    </div>
+  <% end %>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const toggle = document.getElementById("requires_balance_toggle");
+    const fields = document.getElementById("balance_fields");
+    function sync() { fields.style.display = toggle.checked ? "" : "none"; }
+    toggle?.addEventListener("change", sync);
+    sync();
+  });
+</script>

@@ -1,0 +1,11 @@
+<%# Admin — New Leave Type %>
+
+<div class="max-w-lg">
+  <div class="flex items-center gap-2 text-sm text-gray-400 mb-7">
+    <%= link_to "Leave Types", admin_leave_types_path(@current_company.slug), class: "hover:text-gray-600 transition-colors" %>
+    <span>/</span>
+    <span class="text-gray-700 font-medium">New leave type</span>
+  </div>
+  <h1 class="text-2xl font-semibold text-gray-900 mb-8">New Leave Type</h1>
+  <%= render "form", leave_type: @leave_type %>
+</div>

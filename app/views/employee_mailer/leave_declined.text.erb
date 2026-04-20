@@ -1,0 +1,11 @@
+Leave request update — <%= @request.leave_type.name %>
+
+Hi <%= @user.full_name.split.first %>,
+
+Your leave request for <%= @request.start_date.strftime("%-d %b") %> – <%= @request.end_date.strftime("%-d %b %Y") %> was not approved.
+<% if @note.present? %>
+Note: <%= @note %>
+<% end %>
+You can submit a new request at: <%= @url %>
+
+The NestSave Team

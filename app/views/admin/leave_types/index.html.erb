@@ -1,0 +1,69 @@
+<%# Admin — Leave Types %>
+
+<div class="flex items-center justify-between mb-7">
+  <div>
+    <h1 class="text-2xl font-semibold text-gray-900">Leave Types</h1>
+    <p class="text-gray-500 text-sm mt-1">Configure leave categories and entitlements</p>
+  </div>
+  <%= link_to new_admin_leave_type_path(@current_company.slug),
+        class: "inline-flex items-center gap-1.5 bg-primary-500 hover:bg-primary-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors" do %>
+    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+    Add leave type
+  <% end %>
+</div>
+
+<div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+  <% if @leave_types.empty? %>
+    <div class="flex flex-col items-center justify-center py-20 text-center px-8">
+      <p class="text-sm font-medium text-gray-700">No leave types configured</p>
+      <p class="text-xs text-gray-400 mt-1">Add annual leave, sick leave and other types</p>
+    </div>
+  <% else %>
+    <table class="min-w-full">
+      <thead>
+        <tr class="bg-gray-50/70 border-b border-gray-100">
+          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400">Name</th>
+          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden sm:table-cell">Category</th>
+          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden sm:table-cell">Default days</th>
+          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden md:table-cell">Accrues monthly</th>
+          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400">Status</th>
+          <th class="text-right px-5 py-3.5"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <% @leave_types.each do |lt| %>
+          <tr class="hover:bg-gray-50/60 transition-colors">
+            <td class="px-5 py-4 text-sm font-medium text-gray-900"><%= lt.name %></td>
+            <td class="px-5 py-4 hidden sm:table-cell">
+              <% cat_colors = { "annual" => "bg-blue-50 text-blue-700 ring-blue-600/20", "sick" => "bg-amber-50 text-amber-700 ring-amber-600/20", "maternity" => "bg-pink-50 text-pink-700 ring-pink-600/20", "other" => "bg-gray-100 text-gray-600 ring-gray-500/20" } %>
+              <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset <%= cat_colors.fetch(lt.category, cat_colors["other"]) %>">
+                <%= lt.category.humanize %>
+              </span>
+            </td>
+            <td class="px-5 py-4 text-sm text-gray-600 hidden sm:table-cell">
+              <%= lt.requires_balance? ? "#{lt.default_days} days" : "Unlimited" %>
+            </td>
+            <td class="px-5 py-4 hidden md:table-cell">
+              <% if lt.accrues_monthly? %>
+                <span class="text-xs text-emerald-600 font-medium">Yes</span>
+              <% else %>
+                <span class="text-xs text-gray-400">No</span>
+              <% end %>
+            </td>
+            <td class="px-5 py-4">
+              <% if lt.active? %>
+                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20">Active</span>
+              <% else %>
+                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 ring-1 ring-inset ring-gray-500/20">Inactive</span>
+              <% end %>
+            </td>
+            <td class="px-5 py-4 text-right">
+              <%= link_to "Edit", edit_admin_leave_type_path(@current_company.slug, lt),
+                    class: "text-xs font-medium text-gray-500 hover:text-gray-700" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+</div>

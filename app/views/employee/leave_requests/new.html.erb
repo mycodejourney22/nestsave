@@ -1,0 +1,96 @@
+<%# Employee — Request Leave %>
+
+<div class="max-w-lg">
+  <div class="flex items-center gap-2 text-sm text-gray-400 mb-7">
+    <%= link_to "My Leave", employee_leave_requests_path(@current_company.slug), class: "hover:text-gray-600 transition-colors" %>
+    <span>/</span>
+    <span class="text-gray-700 font-medium">New request</span>
+  </div>
+  <h1 class="text-2xl font-semibold text-gray-900 mb-8">Request Leave</h1>
+
+  <% if alert.present? %>
+    <div class="mb-5 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700"><%= alert %></div>
+  <% end %>
+
+  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+    <%= form_with model: [@current_company, @request],
+          url: employee_leave_requests_path(@current_company.slug) do |f| %>
+
+      <div class="space-y-5">
+        <div>
+          <%= f.label :leave_type_id, "Leave type", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <%= f.select :leave_type_id,
+                @leave_types.map { |lt| [lt.name, lt.id] },
+                { prompt: "Select a leave type" },
+                class: "block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition" %>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <%= f.label :start_date, "Start date", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+            <%= f.date_field :start_date,
+                  min: Date.current,
+                  class: "block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition" %>
+          </div>
+          <div>
+            <%= f.label :end_date, "End date", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+            <%= f.date_field :end_date,
+                  min: Date.current,
+                  class: "block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition" %>
+          </div>
+        </div>
+
+        <div id="days-preview" class="hidden rounded-xl bg-primary-50 border border-primary-200 px-4 py-3">
+          <p class="text-sm text-primary-700 font-medium"><span id="days-count">0</span> working day<span id="days-plural">s</span></p>
+          <p class="text-xs text-primary-500 mt-0.5">Excludes weekends</p>
+        </div>
+
+        <div>
+          <%= f.label :reason, "Reason (optional)", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <%= f.text_area :reason, rows: 3, placeholder: "Brief description",
+                class: "block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition" %>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 mt-6">
+        <%= f.submit "Submit request",
+              class: "bg-primary-500 hover:bg-primary-600 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors cursor-pointer" %>
+        <%= link_to "Cancel", employee_leave_requests_path(@current_company.slug),
+              class: "text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors px-2 py-2" %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<script>
+  function workingDays(start, end) {
+    let count = 0;
+    const cur = new Date(start);
+    const fin = new Date(end);
+    while (cur <= fin) {
+      const d = cur.getDay();
+      if (d !== 0 && d !== 6) count++;
+      cur.setDate(cur.getDate() + 1);
+    }
+    return count;
+  }
+
+  function updatePreview() {
+    const s = document.querySelector("[name='leave_request[start_date]']")?.value;
+    const e = document.querySelector("[name='leave_request[end_date]']")?.value;
+    const preview = document.getElementById("days-preview");
+    const countEl = document.getElementById("days-count");
+    const pluralEl = document.getElementById("days-plural");
+    if (s && e && s <= e) {
+      const n = workingDays(s, e);
+      countEl.textContent = n;
+      pluralEl.textContent = n === 1 ? "" : "s";
+      preview.classList.remove("hidden");
+    } else {
+      preview.classList.add("hidden");
+    }
+  }
+
+  document.querySelector("[name='leave_request[start_date]']")?.addEventListener("change", updatePreview);
+  document.querySelector("[name='leave_request[end_date]']")?.addEventListener("change", updatePreview);
+</script>

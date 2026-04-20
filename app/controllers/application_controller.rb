@@ -33,8 +33,8 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  def require_studio_manager!
-    unless @current_membership&.studio_manager_or_above?
+  def require_team_manager!
+    unless @current_membership&.team_manager_or_above?
       redirect_to root_path, alert: "Access denied."
     end
   end

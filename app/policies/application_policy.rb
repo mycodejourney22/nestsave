@@ -22,8 +22,8 @@ class ApplicationPolicy
     current_membership.present?
   end
 
-  def studio_manager_or_above?
-    current_membership&.studio_manager_or_above?
+  def team_manager_or_above?
+    current_membership&.team_manager_or_above?
   end
 
   def hr_or_above?
