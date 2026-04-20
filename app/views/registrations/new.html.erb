@@ -20,7 +20,7 @@
 
     <%= render "shared/flash" %>
 
-    <%= form_with url: registrations_path, local: false, data: { turbo: false } do |f| %>
+    <%= form_with url: registration_path, method: :post, local: false, data: { turbo: false } do |f| %>
 
       <%# ── Company details ─────────────────────────────────────────────── %>
       <div class="mb-7">

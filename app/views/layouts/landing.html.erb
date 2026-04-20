@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <title>NestSave — Employee savings &amp; salary advances</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="NestSave helps companies offer tax-efficient savings deductions and salary advances as a staff benefit.">
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50:  "#edfaf4", 100: "#d3f4e3", 200: "#aae8ca",
+              300: "#72d5aa", 400: "#3aba86", 500: "#1D9E75",
+              600: "#157f5d", 700: "#12664c", 800: "#10503d", 900: "#0d4233"
+            }
+          },
+          fontFamily: {
+            sans:    ["DM Sans", "ui-sans-serif", "system-ui", "sans-serif"],
+            display: ["Playfair Display", "Georgia", "serif"]
+          }
+        }
+      }
+    }
+  </script>
+
+  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  <%= javascript_importmap_tags %>
+</head>
+
+<body class="bg-white font-sans antialiased text-gray-900">
+  <%= yield %>
+</body>
+</html>

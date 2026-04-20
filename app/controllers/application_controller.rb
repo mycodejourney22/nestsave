@@ -1,6 +1,7 @@
 class ApplicationController < ActionController::Base
   include Pundit::Authorization
   include Pagy::Backend
+  include Redirectable
 
   before_action :authenticate_user!
   before_action :set_current_company, unless: :devise_controller?
@@ -52,15 +53,7 @@ class ApplicationController < ActionController::Base
     redirect_to root_path, alert: "Record not found."
   end
 
-  def after_sign_in_path_for(resource)
-    membership = resource.company_memberships.kept.active.first
-    return new_user_session_path unless membership
-
-    slug = membership.company.slug
-    membership.hr_or_above? ? admin_dashboard_path(slug) : employee_dashboard_path(slug)
-  end
-
   def after_sign_out_path_for(_resource_or_scope)
-    new_user_session_path
+    root_path
   end
 end

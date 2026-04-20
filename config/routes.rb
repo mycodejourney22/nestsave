@@ -72,7 +72,8 @@ Rails.application.routes.draw do
   get   "/invitations/:token/accept", to: "invitations#show",   as: :accept_invitation
   patch "/invitations/:token/accept", to: "invitations#update"
 
-  resources :registrations, only: [:new, :create]
+  get  "/register", to: "registrations#new",    as: :new_registration
+  post "/register", to: "registrations#create", as: :registration
 
-  root to: "registrations#new"
+  root to: "pages#home"
 end
