@@ -20,8 +20,7 @@ Rails.application.configure do
   # key such as config/credentials/production.key. This key is used to decrypt credentials (and other encrypted files).
   # config.require_master_key = true
 
-  # Disable serving static files from `public/`, relying on NGINX/Apache to do so instead.
-  # config.public_file_server.enabled = false
+  config.public_file_server.enabled = ENV["RAILS_SERVE_STATIC_FILES"].present?
 
   # Enable serving of images, stylesheets, and JavaScripts from an asset server.
   # config.asset_host = "http://assets.example.com"
@@ -31,6 +30,7 @@ Rails.application.configure do
   # config.action_dispatch.x_sendfile_header = "X-Accel-Redirect" # for NGINX
 
   config.active_storage.service = :cloudinary
+  config.assets.compile = false
 
   # Mount Action Cable outside main process or domain.
   # config.action_cable.mount_path = nil
@@ -44,18 +44,16 @@ Rails.application.configure do
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   config.force_ssl = true
 
-  # Log to STDOUT by default
-  config.logger = ActiveSupport::Logger.new(STDOUT)
-    .tap  { |logger| logger.formatter = ::Logger::Formatter.new }
-    .then { |logger| ActiveSupport::TaggedLogging.new(logger) }
+  config.log_level    = :info
+  config.log_to_stdout = ENV["RAILS_LOG_TO_STDOUT"].present?
 
-  # Prepend all log lines with the following tags.
+  if config.log_to_stdout
+    config.logger = ActiveSupport::Logger.new(STDOUT)
+      .tap  { |logger| logger.formatter = ::Logger::Formatter.new }
+      .then { |logger| ActiveSupport::TaggedLogging.new(logger) }
+  end
+
   config.log_tags = [ :request_id ]
-
-  # "info" includes generic and useful information about system operation, but avoids logging too much
-  # information to avoid inadvertent exposure of personally identifiable information (PII). If you
-  # want to log everything, set the level to "debug".
-  config.log_level = ENV.fetch("RAILS_LOG_LEVEL", "info")
 
   # Use a different cache store in production.
   # config.cache_store = :mem_cache_store
@@ -68,8 +66,8 @@ Rails.application.configure do
   config.action_mailer.delivery_method        = :smtp
   config.action_mailer.perform_deliveries     = true
   config.action_mailer.raise_delivery_errors  = true
-  config.action_mailer.default_url_options    = {
-    host:     Rails.application.credentials.app_host,
+  config.action_mailer.default_url_options = {
+    host:     Rails.application.credentials.app_host || ENV["APP_HOST"],
     protocol: "https"
   }
   config.action_mailer.smtp_settings = {

@@ -45,6 +45,7 @@ gem "pundit", "~> 2.3"
 # Background jobs
 gem "sidekiq", "~> 7.2"
 gem "sidekiq-scheduler", "~> 5.0"
+gem "ostruct"
 
 # Utilities
 gem "pagy", "~> 8.0"
