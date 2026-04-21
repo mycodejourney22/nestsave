@@ -12,7 +12,22 @@
       "Bash(git commit -m ' *)",
       "Bash(git push *)",
       "Bash(git commit *)",
-      "Bash(git rm *)"
+      "Bash(git rm *)",
+      "Bash(bin/rails importmap:json)",
+      "Bash(bin/rails assets:clean)",
+      "Bash(bin/rails tmp:cache:clear)",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl -s http://localhost:3000/assets/controllers/payroll_totals_controller.js)",
+      "Bash(curl -s http://localhost:3000/assets/controllers/sidebar_controller.js)",
+      "Bash(curl -s http://localhost:3000/)",
+      "Bash(curl -s \"http://localhost:3000/assets/controllers/payroll_totals_controller-*.js\")",
+      "Bash(curl -s http://localhost:3000/assets/controllers/payroll_totals_controller.js -v)",
+      "Bash(curl -s \"http://localhost:3000/rails/info/properties\")",
+      "Bash(curl -s \"http://localhost:3000/\")",
+      "Bash(bin/rails assets:precompile)",
+      "Bash(RAILS_ENV=development bin/rails assets:precompile)",
+      "Bash(python3 -c \"import json,sys; m=json.load\\(sys.stdin\\); [print\\(k,v\\) for k,v in m.get\\('assets',{}\\).items\\(\\) if 'payroll' in k]\")",
+      "Bash(python3 -c \"import json,sys; m=json.load\\(sys.stdin\\); print\\(list\\(m.keys\\(\\)\\)\\); print\\(list\\(m.get\\('assets',{}\\).keys\\(\\)\\)[:5]\\)\")"
     ]
   }
 }

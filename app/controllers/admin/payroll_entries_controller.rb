@@ -20,12 +20,14 @@ module Admin
         end
 
         # Add new bonus lines
-        Array(params[:new_bonuses]).each do |bonus|
-          next if bonus[:label].blank? || bonus[:amount].blank?
+        (params[:new_bonuses] || {}).each_value do |bonus|
+          next if bonus[:amount].blank? || bonus[:amount].to_f.zero?
+          item_type = bonus[:item_type].presence || "other_bonus"
+          label     = bonus[:label].presence || item_type.humanize
           @entry.payroll_items.create!(
             category:       "earning",
-            item_type:      bonus[:item_type].presence || "other_bonus",
-            label:          bonus[:label],
+            item_type:      item_type,
+            label:          label,
             amount:         bonus[:amount].to_s.gsub(",", "").to_f,
             auto_generated: false,
             editable:       true
@@ -33,12 +35,14 @@ module Admin
         end
 
         # Add new deduction lines
-        Array(params[:new_deductions]).each do |ded|
-          next if ded[:label].blank? || ded[:amount].blank?
+        (params[:new_deductions] || {}).each_value do |ded|
+          next if ded[:amount].blank? || ded[:amount].to_f.zero?
+          item_type = ded[:item_type].presence || "other_deduction"
+          label     = ded[:label].presence || item_type.humanize
           @entry.payroll_items.create!(
             category:       "deduction",
-            item_type:      ded[:item_type].presence || "other_deduction",
-            label:          ded[:label],
+            item_type:      item_type,
+            label:          label,
             amount:         ded[:amount].to_s.gsub(",", "").to_f,
             auto_generated: false,
             editable:       true

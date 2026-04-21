@@ -31,7 +31,7 @@
     <div class="px-5 py-3.5 bg-gray-50/70 border-b border-gray-100">
       <h2 class="text-sm font-semibold text-gray-900">Earnings</h2>
     </div>
-    <table class="min-w-full" id="earnings-table">
+    <table class="min-w-full">
       <thead>
         <tr class="border-b border-gray-100">
           <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Description</th>
@@ -39,7 +39,7 @@
           <th class="px-5 py-3 w-20"></th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-gray-100">
+      <tbody class="divide-y divide-gray-100" data-payroll-totals-target="earningsBody">
         <% @earnings.each do |item| %>
           <tr>
             <td class="px-5 py-3.5">
@@ -58,12 +58,7 @@
                        data-action="input->payroll-totals#update"
                        class="w-36 text-right rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
               <% else %>
-                <span class="text-sm font-semibold text-gray-900"
-                      data-payroll-totals-target="earningsAmount"
-                      data-amount="<%= item.amount %>">
-                  <%= gbp(item.amount) %>
-                </span>
-                <%# Hidden input to include in totals calculation %>
+                <span class="text-sm font-semibold text-gray-900"><%= gbp(item.amount) %></span>
                 <input type="hidden"
                        data-payroll-totals-target="earningsAmount"
                        value="<%= item.amount %>">
@@ -80,40 +75,9 @@
             </td>
           </tr>
         <% end %>
-
-        <%# New bonus rows get inserted before this template %>
-        <template id="earnings-row-template">
-          <tr>
-            <td class="px-5 py-3.5" colspan="2">
-              <div class="flex items-center gap-2">
-                <input type="text"
-                       name="new_bonuses[__idx__][label]"
-                       placeholder="Description e.g. Target bonus Q1"
-                       class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-                <select name="new_bonuses[__idx__][item_type]"
-                        class="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-                  <option value="target_bonus">Target bonus</option>
-                  <option value="birthday_bonus">Birthday bonus</option>
-                  <option value="outdoor_stipend">Outdoor stipend</option>
-                  <option value="other_bonus">Other bonus</option>
-                </select>
-                <input type="number"
-                       name="new_bonuses[__idx__][amount]"
-                       placeholder="0.00"
-                       step="0.01" min="0"
-                       data-payroll-totals-target="earningsAmount"
-                       data-action="input->payroll-totals#update"
-                       class="w-32 text-right rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-                <button type="button"
-                        data-action="click->payroll-totals#removeRow"
-                        class="text-red-400 hover:text-red-600 text-sm font-bold px-2">×</button>
-              </div>
-            </td>
-            <td></td>
-          </tr>
-        </template>
       </tbody>
     </table>
+
     <div class="px-5 py-3 border-t border-gray-100">
       <button type="button"
               data-action="click->payroll-totals#addEarningsRow"
@@ -129,7 +93,7 @@
     <div class="px-5 py-3.5 bg-gray-50/70 border-b border-gray-100">
       <h2 class="text-sm font-semibold text-gray-900">Deductions</h2>
     </div>
-    <table class="min-w-full" id="deductions-table">
+    <table class="min-w-full">
       <thead>
         <tr class="border-b border-gray-100">
           <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Description</th>
@@ -137,7 +101,7 @@
           <th class="px-5 py-3 w-20"></th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-gray-100">
+      <tbody class="divide-y divide-gray-100" data-payroll-totals-target="deductionsBody">
         <% @deductions.each do |item| %>
           <tr>
             <td class="px-5 py-3.5">
@@ -158,9 +122,7 @@
                        data-action="input->payroll-totals#update"
                        class="w-36 text-right rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
               <% else %>
-                <span class="text-sm font-semibold text-red-600">
-                  <%= gbp(item.amount) %>
-                </span>
+                <span class="text-sm font-semibold text-red-600"><%= gbp(item.amount) %></span>
                 <input type="hidden"
                        data-payroll-totals-target="deductionsAmount"
                        value="<%= item.amount %>">
@@ -177,37 +139,9 @@
             </td>
           </tr>
         <% end %>
-
-        <template id="deductions-row-template">
-          <tr>
-            <td class="px-5 py-3.5" colspan="2">
-              <div class="flex items-center gap-2">
-                <input type="text"
-                       name="new_deductions[__idx__][label]"
-                       placeholder="Description e.g. Uniform fine"
-                       class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-                <select name="new_deductions[__idx__][item_type]"
-                        class="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-                  <option value="fine">Fine</option>
-                  <option value="other_deduction">Other deduction</option>
-                </select>
-                <input type="number"
-                       name="new_deductions[__idx__][amount]"
-                       placeholder="0.00"
-                       step="0.01" min="0"
-                       data-payroll-totals-target="deductionsAmount"
-                       data-action="input->payroll-totals#update"
-                       class="w-32 text-right rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-                <button type="button"
-                        data-action="click->payroll-totals#removeRow"
-                        class="text-red-400 hover:text-red-600 text-sm font-bold px-2">×</button>
-              </div>
-            </td>
-            <td></td>
-          </tr>
-        </template>
       </tbody>
     </table>
+
     <div class="px-5 py-3 border-t border-gray-100">
       <button type="button"
               data-action="click->payroll-totals#addDeductionsRow"
