@@ -17,9 +17,6 @@
             <% if @current_team %>
               &middot; <%= @current_team.name %>
             <% end %>
-            <% if @profile.employment_start_date.present? %>
-              &middot; since <%= @profile.employment_start_date.strftime("%-d %b %Y") %>
-            <% end %>
           <% else %>
             <%= @current_company.name %>
           <% end %>
@@ -38,9 +35,7 @@
       <% if @profile.employee_number.present? %>
         <span><span class="font-medium text-gray-700">Employee #</span> <%= @profile.employee_number %></span>
       <% end %>
-      <% if @profile.employment_start_date.present? %>
-        <span><span class="font-medium text-gray-700">Started</span> <%= @profile.employment_start_date.strftime("%-d %b %Y") %></span>
-      <% end %>
+
       <% if @profile.employment_type.present? %>
         <span><span class="font-medium text-gray-700">Type</span> <%= @profile.employment_type_label %></span>
       <% end %>
