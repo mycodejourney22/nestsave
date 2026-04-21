@@ -68,7 +68,7 @@ module Leave
       end
 
       reviewers.each do |m|
-        ::HrMailer.leave_requested(m.user, request).deliver_later
+        PayrollMailer.leave_requested(m.user, request).deliver_later
       end
     end
   end

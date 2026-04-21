@@ -1,4 +1,4 @@
-class HrMailer < ApplicationMailer
+class PayrollMailer < ApplicationMailer
   def leave_requested(admin, request)
     @admin   = admin
     @request = request
