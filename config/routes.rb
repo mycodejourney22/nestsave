@@ -24,6 +24,7 @@ Rails.application.routes.draw do
 
       resources :leave_requests, only: [:index, :new, :create, :destroy]
       resources :rotas,          only: [:index, :show]
+      resources :payslips,       only: [:index, :show]
     end
 
     namespace :admin do
@@ -62,6 +63,20 @@ Rails.application.routes.draw do
       resources :departments,         only: [:index, :new, :create, :edit, :update, :destroy]
       resources :teams,               only: [:index, :show, :new, :create, :edit, :update, :destroy]
       resources :leave_types,         only: [:index, :new, :create, :edit, :update]
+
+      resources :payroll_runs, only: [:index, :new, :create, :show] do
+        member do
+          patch :finalise
+          patch :reopen
+          patch :send_payslips
+          get   :export_csv
+        end
+        resources :payroll_entries, only: [:edit, :update] do
+          member do
+            delete :destroy_item
+          end
+        end
+      end
 
       resources :leave_requests, only: [:index] do
         member do

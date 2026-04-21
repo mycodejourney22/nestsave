@@ -1,0 +1,255 @@
+<%# Admin — Edit Payroll Entry %>
+
+<div class="flex items-center gap-2 text-sm text-gray-400 mb-7">
+  <%= link_to "Payroll", admin_payroll_runs_path(@current_company.slug), class: "hover:text-gray-600 transition-colors" %>
+  <span>/</span>
+  <%= link_to @run.period_label, admin_payroll_run_path(@current_company.slug, @run), class: "hover:text-gray-600 transition-colors" %>
+  <span>/</span>
+  <span class="text-gray-700 font-medium"><%= @entry.display_name %></span>
+</div>
+
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h1 class="text-xl font-semibold text-gray-900"><%= @entry.display_name %></h1>
+    <p class="text-sm text-gray-500 mt-0.5"><%= @run.period_label %> payroll entry</p>
+  </div>
+</div>
+
+<% if notice.present? %>
+  <div class="mb-5 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-700"><%= notice %></div>
+<% end %>
+<% if alert.present? %>
+  <div class="mb-5 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700"><%= alert %></div>
+<% end %>
+
+<%= form_with url: admin_payroll_run_payroll_entry_path(@current_company.slug, @run, @entry),
+              method: :patch,
+              data: { controller: "payroll-totals", "currency-symbol": currency_symbol } do |f| %>
+
+  <%# ── Earnings ─────────────────────────────────────────────── %>
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-4">
+    <div class="px-5 py-3.5 bg-gray-50/70 border-b border-gray-100">
+      <h2 class="text-sm font-semibold text-gray-900">Earnings</h2>
+    </div>
+    <table class="min-w-full" id="earnings-table">
+      <thead>
+        <tr class="border-b border-gray-100">
+          <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Description</th>
+          <th class="text-right px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400 w-40">Amount</th>
+          <th class="px-5 py-3 w-20"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <% @earnings.each do |item| %>
+          <tr>
+            <td class="px-5 py-3.5">
+              <p class="text-sm font-medium text-gray-900"><%= item.label %></p>
+              <% unless item.editable? %>
+                <span class="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">Pre-filled</span>
+              <% end %>
+            </td>
+            <td class="px-5 py-3.5 text-right">
+              <% if item.editable? %>
+                <input type="number"
+                       name="payroll_items[<%= item.id %>][amount]"
+                       value="<%= item.amount %>"
+                       step="0.01" min="0"
+                       data-payroll-totals-target="earningsAmount"
+                       data-action="input->payroll-totals#update"
+                       class="w-36 text-right rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+              <% else %>
+                <span class="text-sm font-semibold text-gray-900"
+                      data-payroll-totals-target="earningsAmount"
+                      data-amount="<%= item.amount %>">
+                  <%= gbp(item.amount) %>
+                </span>
+                <%# Hidden input to include in totals calculation %>
+                <input type="hidden"
+                       data-payroll-totals-target="earningsAmount"
+                       value="<%= item.amount %>">
+              <% end %>
+            </td>
+            <td class="px-5 py-3.5 text-right">
+              <% if item.editable? && item.item_type != "base_salary" %>
+                <%= button_to "×",
+                      destroy_item_admin_payroll_run_payroll_entry_path(@current_company.slug, @run, @entry, item_id: item.id),
+                      method: :delete,
+                      data: { turbo_confirm: "Remove this line?" },
+                      class: "text-red-400 hover:text-red-600 text-sm font-bold bg-transparent border-0 cursor-pointer" %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+
+        <%# New bonus rows get inserted before this template %>
+        <template id="earnings-row-template">
+          <tr>
+            <td class="px-5 py-3.5" colspan="2">
+              <div class="flex items-center gap-2">
+                <input type="text"
+                       name="new_bonuses[__idx__][label]"
+                       placeholder="Description e.g. Target bonus Q1"
+                       class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                <select name="new_bonuses[__idx__][item_type]"
+                        class="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                  <option value="target_bonus">Target bonus</option>
+                  <option value="birthday_bonus">Birthday bonus</option>
+                  <option value="outdoor_stipend">Outdoor stipend</option>
+                  <option value="other_bonus">Other bonus</option>
+                </select>
+                <input type="number"
+                       name="new_bonuses[__idx__][amount]"
+                       placeholder="0.00"
+                       step="0.01" min="0"
+                       data-payroll-totals-target="earningsAmount"
+                       data-action="input->payroll-totals#update"
+                       class="w-32 text-right rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                <button type="button"
+                        data-action="click->payroll-totals#removeRow"
+                        class="text-red-400 hover:text-red-600 text-sm font-bold px-2">×</button>
+              </div>
+            </td>
+            <td></td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
+    <div class="px-5 py-3 border-t border-gray-100">
+      <button type="button"
+              data-action="click->payroll-totals#addEarningsRow"
+              class="text-xs font-medium text-primary-600 hover:text-primary-700 inline-flex items-center gap-1">
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+        Add bonus line
+      </button>
+    </div>
+  </div>
+
+  <%# ── Deductions ───────────────────────────────────────────── %>
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden mb-4">
+    <div class="px-5 py-3.5 bg-gray-50/70 border-b border-gray-100">
+      <h2 class="text-sm font-semibold text-gray-900">Deductions</h2>
+    </div>
+    <table class="min-w-full" id="deductions-table">
+      <thead>
+        <tr class="border-b border-gray-100">
+          <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Description</th>
+          <th class="text-right px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400 w-40">Amount</th>
+          <th class="px-5 py-3 w-20"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <% @deductions.each do |item| %>
+          <tr>
+            <td class="px-5 py-3.5">
+              <p class="text-sm font-medium text-gray-900"><%= item.label %></p>
+              <% if item.auto_generated? %>
+                <span class="text-xs text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">Auto</span>
+              <% elsif %w[paye pension].include?(item.item_type) %>
+                <span class="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">Pre-filled from last month</span>
+              <% end %>
+            </td>
+            <td class="px-5 py-3.5 text-right">
+              <% if item.editable? %>
+                <input type="number"
+                       name="payroll_items[<%= item.id %>][amount]"
+                       value="<%= item.amount %>"
+                       step="0.01" min="0"
+                       data-payroll-totals-target="deductionsAmount"
+                       data-action="input->payroll-totals#update"
+                       class="w-36 text-right rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+              <% else %>
+                <span class="text-sm font-semibold text-red-600">
+                  <%= gbp(item.amount) %>
+                </span>
+                <input type="hidden"
+                       data-payroll-totals-target="deductionsAmount"
+                       value="<%= item.amount %>">
+              <% end %>
+            </td>
+            <td class="px-5 py-3.5 text-right">
+              <% if item.editable? && !item.auto_generated? %>
+                <%= button_to "×",
+                      destroy_item_admin_payroll_run_payroll_entry_path(@current_company.slug, @run, @entry, item_id: item.id),
+                      method: :delete,
+                      data: { turbo_confirm: "Remove this line?" },
+                      class: "text-red-400 hover:text-red-600 text-sm font-bold bg-transparent border-0 cursor-pointer" %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+
+        <template id="deductions-row-template">
+          <tr>
+            <td class="px-5 py-3.5" colspan="2">
+              <div class="flex items-center gap-2">
+                <input type="text"
+                       name="new_deductions[__idx__][label]"
+                       placeholder="Description e.g. Uniform fine"
+                       class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                <select name="new_deductions[__idx__][item_type]"
+                        class="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                  <option value="fine">Fine</option>
+                  <option value="other_deduction">Other deduction</option>
+                </select>
+                <input type="number"
+                       name="new_deductions[__idx__][amount]"
+                       placeholder="0.00"
+                       step="0.01" min="0"
+                       data-payroll-totals-target="deductionsAmount"
+                       data-action="input->payroll-totals#update"
+                       class="w-32 text-right rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+                <button type="button"
+                        data-action="click->payroll-totals#removeRow"
+                        class="text-red-400 hover:text-red-600 text-sm font-bold px-2">×</button>
+              </div>
+            </td>
+            <td></td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
+    <div class="px-5 py-3 border-t border-gray-100">
+      <button type="button"
+              data-action="click->payroll-totals#addDeductionsRow"
+              class="text-xs font-medium text-primary-600 hover:text-primary-700 inline-flex items-center gap-1">
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+        Add deduction line
+      </button>
+    </div>
+  </div>
+
+  <%# ── Live totals ──────────────────────────────────────────── %>
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 mb-6">
+    <div class="grid grid-cols-3 gap-6">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Total earnings</p>
+        <p class="text-xl font-bold text-gray-900" data-payroll-totals-target="totalEarnings">
+          <%= gbp(@entry.total_earnings) %>
+        </p>
+      </div>
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Total deductions</p>
+        <p class="text-xl font-bold text-red-600" data-payroll-totals-target="totalDeductions">
+          <%= gbp(@entry.total_deductions) %>
+        </p>
+      </div>
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Net pay</p>
+        <p class="text-xl font-bold <%= @entry.net_pay < 0 ? "text-red-600" : "text-emerald-700" %>"
+           data-payroll-totals-target="netPay">
+          <%= gbp(@entry.net_pay) %>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex items-center gap-3">
+    <button type="submit"
+            class="bg-primary-500 hover:bg-primary-600 text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-colors">
+      Save entry
+    </button>
+    <%= link_to "Cancel",
+          admin_payroll_run_path(@current_company.slug, @run),
+          class: "text-sm font-medium text-gray-600 hover:text-gray-800" %>
+  </div>
+<% end %>

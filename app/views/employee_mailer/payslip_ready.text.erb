@@ -1,0 +1,28 @@
+Your payslip for <%= @run.period_label %> is ready
+========================================
+
+Hi <%= @user.full_name.split.first %>,
+
+Your payslip for <%= @run.period_label %> has been processed.
+
+NET PAY: <%= formatted_currency(@entry.net_pay) %>
+
+EARNINGS
+--------
+<% @entry.earnings_items.each do |item| %>
+<%= item.label %>: <%= formatted_currency(item.amount) %>
+<% end %>
+Total earnings: <%= formatted_currency(@entry.total_earnings) %>
+
+DEDUCTIONS
+----------
+<% @entry.deductions_items.each do |item| %>
+<%= item.label %>: -<%= formatted_currency(item.amount) %>
+<% end %>
+Total deductions: -<%= formatted_currency(@entry.total_deductions) %>
+
+View your full payslip: <%= @url %>
+
+This is your official payslip for <%= @run.period_label %>. Please keep it for your records.
+
+NestSave

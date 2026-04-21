@@ -1,0 +1,69 @@
+<%# Admin — New Payroll Run %>
+
+<div class="flex items-center gap-2 text-sm text-gray-400 mb-7">
+  <%= link_to "Payroll", admin_payroll_runs_path(@current_company.slug), class: "hover:text-gray-600 transition-colors" %>
+  <span>/</span>
+  <span class="text-gray-700 font-medium">New payroll run</span>
+</div>
+
+<div class="max-w-lg">
+  <h1 class="text-2xl font-semibold text-gray-900 mb-1">Create payroll run</h1>
+  <p class="text-gray-500 text-sm mb-7">
+    We'll pre-fill all active employees with their base salary, savings deductions,
+    advance repayments, and last month's PAYE and pension.
+  </p>
+
+  <% if notice.present? %>
+    <div class="mb-5 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-700"><%= notice %></div>
+  <% end %>
+  <% if alert.present? %>
+    <div class="mb-5 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700"><%= alert %></div>
+  <% end %>
+
+  <% if @existing %>
+    <div class="mb-6 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
+      <p class="font-semibold mb-1">Payroll run already exists</p>
+      <p>A payroll run for <%= Date.new(@year, @month, 1).strftime("%B %Y") %> has already been created.
+         <%= link_to "View it here", admin_payroll_run_path(@current_company.slug, @existing), class: "font-semibold underline" %>.</p>
+    </div>
+  <% end %>
+
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+    <%= form_with url: admin_payroll_runs_path(@current_company.slug), method: :post,
+                  data: { turbo: false } do |f| %>
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Month</label>
+          <select name="month"
+                  class="block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+            <% Date::MONTHNAMES.compact.each_with_index do |name, i| %>
+              <option value="<%= i + 1 %>" <%= (i + 1) == @month ? "selected" : "" %>><%= name %></option>
+            <% end %>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Year</label>
+          <select name="year"
+                  class="block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
+            <% (Date.current.year - 1..Date.current.year + 1).each do |y| %>
+              <option value="<%= y %>" <%= y == @year ? "selected" : "" %>><%= y %></option>
+            <% end %>
+          </select>
+        </div>
+      </div>
+
+      <div class="bg-gray-50 rounded-lg px-4 py-3 mb-6 text-xs text-gray-500 space-y-1">
+        <p class="font-semibold text-gray-700">What gets pre-filled:</p>
+        <p>• Base salary from each employee's salary history</p>
+        <p>• PAYE and pension from last month's payroll (or £0.00 for first run)</p>
+        <p>• Savings deductions for all active savings plans</p>
+        <p>• Advance repayments due this month</p>
+      </div>
+
+      <button type="submit"
+              class="w-full bg-primary-500 hover:bg-primary-600 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors">
+        Create and pre-fill entries
+      </button>
+    <% end %>
+  </div>
+</div>

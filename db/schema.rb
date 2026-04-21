@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_21_000008) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_21_150344) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -287,6 +287,51 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_21_000008) do
     t.index ["user_id"], name: "index_notifications_on_user_id"
   end
 
+  create_table "payroll_entries", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "payroll_run_id", null: false
+    t.uuid "employee_profile_id", null: false
+    t.decimal "base_salary", precision: 14, scale: 2, null: false
+    t.decimal "total_earnings", precision: 14, scale: 2, default: "0.0", null: false
+    t.decimal "total_deductions", precision: 14, scale: 2, default: "0.0", null: false
+    t.decimal "net_pay", precision: 14, scale: 2, default: "0.0", null: false
+    t.boolean "locked", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["employee_profile_id"], name: "index_payroll_entries_on_employee_profile_id"
+    t.index ["payroll_run_id", "employee_profile_id"], name: "idx_payroll_entries_unique", unique: true
+    t.index ["payroll_run_id"], name: "index_payroll_entries_on_payroll_run_id"
+  end
+
+  create_table "payroll_items", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "payroll_entry_id", null: false
+    t.string "category", null: false
+    t.string "item_type", null: false
+    t.string "label", null: false
+    t.decimal "amount", precision: 14, scale: 2, default: "0.0", null: false
+    t.string "notes"
+    t.boolean "auto_generated", default: false, null: false
+    t.boolean "editable", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["payroll_entry_id", "item_type"], name: "index_payroll_items_on_payroll_entry_id_and_item_type"
+    t.index ["payroll_entry_id"], name: "index_payroll_items_on_payroll_entry_id"
+  end
+
+  create_table "payroll_runs", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "company_id", null: false
+    t.integer "month", null: false
+    t.integer "year", null: false
+    t.string "status", default: "draft", null: false
+    t.uuid "created_by", null: false
+    t.uuid "finalised_by"
+    t.datetime "finalised_at"
+    t.datetime "payslips_sent_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["company_id", "month", "year"], name: "idx_payroll_runs_unique", unique: true
+    t.index ["company_id"], name: "index_payroll_runs_on_company_id"
+  end
+
   create_table "rota_entries", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "rota_id", null: false
     t.uuid "employee_profile_id", null: false
@@ -461,6 +506,12 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_21_000008) do
   add_foreign_key "leave_requests", "users", column: "reviewed_by"
   add_foreign_key "leave_types", "companies"
   add_foreign_key "notifications", "users"
+  add_foreign_key "payroll_entries", "employee_profiles"
+  add_foreign_key "payroll_entries", "payroll_runs"
+  add_foreign_key "payroll_items", "payroll_entries"
+  add_foreign_key "payroll_runs", "companies"
+  add_foreign_key "payroll_runs", "users", column: "created_by"
+  add_foreign_key "payroll_runs", "users", column: "finalised_by"
   add_foreign_key "rota_entries", "employee_profiles"
   add_foreign_key "rota_entries", "rotas"
   add_foreign_key "rotas", "teams"

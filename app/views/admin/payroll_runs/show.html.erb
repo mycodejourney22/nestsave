@@ -1,0 +1,227 @@
+<%# Admin — Payroll Run Show %>
+
+<div class="flex items-center gap-2 text-sm text-gray-400 mb-7">
+  <%= link_to "Payroll", admin_payroll_runs_path(@current_company.slug), class: "hover:text-gray-600 transition-colors" %>
+  <span>/</span>
+  <span class="text-gray-700 font-medium"><%= @run.period_label %></span>
+</div>
+
+<%# Header %>
+<div class="flex items-start justify-between mb-6 gap-4">
+  <div>
+    <div class="flex items-center gap-3 mb-1">
+      <h1 class="text-2xl font-semibold text-gray-900"><%= @run.period_label %></h1>
+      <%
+        status_css = case @run.status
+          when "draft"         then "bg-amber-50 text-amber-700 ring-amber-600/20"
+          when "in_review"     then "bg-blue-50 text-blue-700 ring-blue-600/20"
+          when "finalised"     then "bg-emerald-50 text-emerald-700 ring-emerald-600/20"
+          when "payslips_sent" then "bg-gray-100 text-gray-600 ring-gray-500/20"
+          else "bg-gray-100 text-gray-600 ring-gray-500/20"
+        end
+      %>
+      <span class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset <%= status_css %>">
+        <%= @run.status.humanize %>
+      </span>
+    </div>
+    <p class="text-sm text-gray-500">
+      Created by <%= @run.creator.full_name %> on <%= @run.created_at.strftime("%-d %b %Y") %>
+      <% if @run.finaliser %>
+        &middot; Finalised by <%= @run.finaliser.full_name %> on <%= @run.finalised_at.strftime("%-d %b %Y") %>
+      <% end %>
+      <% if @run.payslips_sent_at %>
+        &middot; Payslips sent <%= @run.payslips_sent_at.strftime("%-d %b %Y") %>
+      <% end %>
+    </p>
+  </div>
+
+  <%# Action buttons %>
+  <div class="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
+    <%= link_to "Export CSV",
+          export_csv_admin_payroll_run_path(@current_company.slug, @run),
+          class: "inline-flex items-center gap-1.5 bg-white border border-gray-200 hover:border-gray-300 text-gray-700 px-3.5 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm" %>
+
+    <% if @run.finalised? %>
+      <%= button_to "Reopen",
+            reopen_admin_payroll_run_path(@current_company.slug, @run),
+            method: :patch,
+            data: { turbo_confirm: "Reopen this payroll run for editing?" },
+            class: "inline-flex items-center bg-white border border-amber-300 hover:border-amber-400 text-amber-700 px-3.5 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm" %>
+      <%= button_to "Send payslips",
+            send_payslips_admin_payroll_run_path(@current_company.slug, @run),
+            method: :patch,
+            data: { turbo_confirm: "Send payslips to all #{@entries.size} employees? This cannot be undone." },
+            class: "inline-flex items-center bg-primary-500 hover:bg-primary-600 text-white px-3.5 py-2 rounded-xl text-sm font-semibold transition-colors" %>
+    <% elsif @run.draft? || @run.in_review? %>
+      <% any_zero_net = @entries.any? { |e| e.net_pay <= 0 } %>
+      <% if any_zero_net %>
+        <span class="inline-flex items-center gap-1.5 bg-gray-100 text-gray-400 px-3.5 py-2 rounded-xl text-sm font-semibold cursor-not-allowed"
+              title="Some entries have £0 or negative net pay. Review before finalising.">
+          Finalise payroll
+        </span>
+      <% else %>
+        <%= button_to "Finalise payroll",
+              finalise_admin_payroll_run_path(@current_company.slug, @run),
+              method: :patch,
+              data: { turbo_confirm: "Finalise this payroll run? You can still reopen it before sending payslips." },
+              class: "inline-flex items-center bg-primary-500 hover:bg-primary-600 text-white px-3.5 py-2 rounded-xl text-sm font-semibold transition-colors" %>
+      <% end %>
+    <% end %>
+  </div>
+</div>
+
+<% if notice.present? %>
+  <div class="mb-5 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-700"><%= notice %></div>
+<% end %>
+<% if alert.present? %>
+  <div class="mb-5 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700"><%= alert %></div>
+<% end %>
+
+<%# Summary cards %>
+<div class="grid grid-cols-3 gap-4 mb-7">
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+    <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Total gross</p>
+    <p class="text-2xl font-bold text-gray-900"><%= gbp(@run.total_gross) %></p>
+    <p class="text-xs text-gray-400 mt-1"><%= @entries.size %> employees</p>
+  </div>
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+    <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Total deductions</p>
+    <p class="text-2xl font-bold text-red-600"><%= gbp(@run.total_deductions) %></p>
+    <p class="text-xs text-gray-400 mt-1">PAYE, pension, savings, advances</p>
+  </div>
+  <div class="bg-gradient-to-br from-[#0f1a14] to-[#1D9E75]/80 rounded-xl p-5 text-white">
+    <p class="text-xs font-semibold uppercase tracking-wider text-white/60 mb-1">Total net pay</p>
+    <p class="text-2xl font-bold text-white"><%= gbp(@run.total_net) %></p>
+    <p class="text-xs text-white/50 mt-1">to be paid to employees</p>
+  </div>
+</div>
+
+<%# Payroll table %>
+<div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto mb-8">
+  <table class="min-w-full">
+    <thead>
+      <tr class="bg-gray-50/70 border-b border-gray-100">
+        <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400">Employee</th>
+        <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden lg:table-cell">Team</th>
+        <th class="text-right px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden sm:table-cell">Base salary</th>
+        <th class="text-right px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden sm:table-cell">Bonuses</th>
+        <th class="text-right px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden sm:table-cell">Deductions</th>
+        <th class="text-right px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400">Net pay</th>
+        <th class="text-right px-5 py-3.5"></th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+      <% @entries.each do |entry| %>
+        <% profile = entry.employee_profile %>
+        <% bonuses = entry.earnings_items.where.not(item_type: "base_salary").sum(:amount) %>
+        <tr class="hover:bg-gray-50/60 transition-colors">
+          <td class="px-5 py-4">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+                <span class="text-primary-700 text-xs font-bold">
+                  <%= entry.display_name.split.first(2).map { |w| w[0] }.join.upcase %>
+                </span>
+              </div>
+              <div>
+                <p class="text-sm font-semibold text-gray-900"><%= entry.display_name %></p>
+                <p class="text-xs text-gray-400"><%= profile.job_title.presence || "—" %></p>
+              </div>
+            </div>
+          </td>
+          <td class="px-5 py-4 text-sm text-gray-600 hidden lg:table-cell">
+            <%= profile.team&.name || "Company-wide" %>
+          </td>
+          <td class="px-5 py-4 text-sm text-gray-700 text-right hidden sm:table-cell">
+            <%= gbp(entry.base_salary) %>
+          </td>
+          <td class="px-5 py-4 text-sm text-right hidden sm:table-cell">
+            <% if bonuses > 0 %>
+              <span class="text-emerald-700 font-medium">+<%= gbp(bonuses) %></span>
+            <% else %>
+              <span class="text-gray-300">—</span>
+            <% end %>
+          </td>
+          <td class="px-5 py-4 text-sm text-red-600 text-right hidden sm:table-cell">
+            <%= gbp(entry.total_deductions) %>
+          </td>
+          <td class="px-5 py-4 text-right">
+            <span class="text-sm font-bold <%= entry.net_pay < 0 ? "text-red-600" : "text-gray-900" %>">
+              <%= gbp(entry.net_pay) %>
+            </span>
+          </td>
+          <td class="px-5 py-4 text-right">
+            <% if @run.editable? %>
+              <%= link_to "Edit",
+                    edit_admin_payroll_run_payroll_entry_path(@current_company.slug, @run, entry),
+                    class: "text-xs font-medium text-primary-600 hover:text-primary-700" %>
+            <% else %>
+              <span class="text-xs text-gray-300">Locked</span>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+
+      <%# Totals row %>
+      <tr class="bg-gray-50/80 border-t-2 border-gray-200">
+        <td class="px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider">Total</td>
+        <td class="hidden lg:table-cell"></td>
+        <td class="px-5 py-3.5 text-sm font-bold text-gray-900 text-right hidden sm:table-cell">
+          <%= gbp(@entries.sum(:base_salary)) %>
+        </td>
+        <td class="px-5 py-3.5 text-sm font-bold text-emerald-700 text-right hidden sm:table-cell">
+          <%
+            total_bonuses = @entries.sum { |e| e.earnings_items.where.not(item_type: "base_salary").sum(:amount) }
+          %>
+          <%= total_bonuses > 0 ? "+#{gbp(total_bonuses)}" : "—" %>
+        </td>
+        <td class="px-5 py-3.5 text-sm font-bold text-red-600 text-right hidden sm:table-cell">
+          <%= gbp(@entries.sum(:total_deductions)) %>
+        </td>
+        <td class="px-5 py-3.5 text-sm font-bold text-gray-900 text-right">
+          <%= gbp(@entries.sum(:net_pay)) %>
+        </td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<%# Status timeline %>
+<div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+  <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-4">Progress</p>
+  <div class="flex items-center gap-0">
+    <%
+      stages = [
+        { key: "draft",         label: "Draft" },
+        { key: "in_review",     label: "In review" },
+        { key: "finalised",     label: "Finalised" },
+        { key: "payslips_sent", label: "Payslips sent" }
+      ]
+      order = %w[draft in_review finalised payslips_sent]
+      current_idx = order.index(@run.status) || 0
+    %>
+    <% stages.each_with_index do |stage, i| %>
+      <% is_done    = i <= current_idx %>
+      <% is_current = i == current_idx %>
+      <div class="flex items-center <%= i < stages.size - 1 ? "flex-1" : "" %>">
+        <div class="flex flex-col items-center">
+          <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold
+                      <%= is_done ? "bg-primary-500 text-white" : "bg-gray-100 text-gray-400" %>">
+            <% if is_done && !is_current %>
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+            <% else %>
+              <%= i + 1 %>
+            <% end %>
+          </div>
+          <p class="text-xs mt-1.5 whitespace-nowrap
+                    <%= is_current ? "text-primary-600 font-semibold" : is_done ? "text-gray-600" : "text-gray-400" %>">
+            <%= stage[:label] %>
+          </p>
+        </div>
+        <% if i < stages.size - 1 %>
+          <div class="flex-1 h-0.5 mx-2 mb-4 <%= i < current_idx ? "bg-primary-400" : "bg-gray-100" %>"></div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+</div>

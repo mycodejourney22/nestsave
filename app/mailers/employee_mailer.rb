@@ -111,6 +111,17 @@ class EmployeeMailer < ApplicationMailer
          subject: "[NestSave] Salary advance fully repaid — well done!"
   end
 
+  def payslip_ready(user, entry)
+    @user    = user
+    @entry   = entry
+    @run     = entry.payroll_run
+    @company = entry.employee_profile.company_membership.company
+    @url     = employee_payslip_url(company_slug: @company.slug, id: entry.id)
+
+    mail to:      user.email,
+         subject: "[NestSave] Your payslip for #{@run.period_label} is ready"
+  end
+
   def leave_approved(user, request)
     @user    = user
     @request = request
