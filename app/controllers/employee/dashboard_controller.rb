@@ -7,11 +7,29 @@ module Employee
       @current_salary = @profile&.current_salary
       @current_team   = @profile&.team
 
-      # Leave balances — annual only (shown on dashboard)
-      @leave_balances = @profile&.leave_balances
-                          .includes(:leave_type)
-                          .where(year: Date.current.year)
-                          .order(:created_at) || []
+      # Leave balances — build for all active annual leave types,
+      # falling back to LeaveBalance.new for types with no DB record yet
+      if @profile
+        annual_types = @current_company.leave_types.active
+                         .where(category: "annual").order(:name)
+        existing     = @profile.leave_balances
+                         .includes(:leave_type)
+                         .where(year: Date.current.year)
+                         .index_by(&:leave_type_id)
+        @leave_balances = annual_types.map do |lt|
+          existing[lt.id] || LeaveBalance.new(
+            employee_profile: @profile,
+            leave_type:       lt,
+            year:             Date.current.year,
+            total_days:       lt.default_days,
+            accrued_days:     lt.default_days,
+            used_days:        0,
+            override_days:    0
+          )
+        end
+      else
+        @leave_balances = []
+      end
 
       # This week's published rota for the employee's team
       @current_rota = nil
