@@ -3,7 +3,7 @@
 <div class="flex items-center justify-between mb-7">
   <div>
     <h1 class="text-2xl font-semibold text-gray-900">My Leave</h1>
-    <p class="text-gray-500 text-sm mt-1">Your leave balances and history</p>
+    <p class="text-gray-500 text-sm mt-1">Your entitlements and request history</p>
   </div>
   <%= link_to new_employee_leave_request_path(@current_company.slug),
         class: "inline-flex items-center gap-1.5 bg-primary-500 hover:bg-primary-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors" do %>
@@ -19,78 +19,100 @@
   <div class="mb-5 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700"><%= alert %></div>
 <% end %>
 
-<%# Balance summary cards %>
-<% if @balances.any? %>
-  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-8">
-    <% @balances.each do |bal| %>
-      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-        <p class="text-xs font-medium text-gray-500 mb-2"><%= bal.leave_type.name %></p>
-        <% if bal.leave_type.requires_balance? %>
-          <p class="text-2xl font-bold text-gray-900"><%= bal.remaining_days.to_i %><span class="text-sm font-normal text-gray-400 ml-1">/ <%= bal.total_days.to_i %></span></p>
-          <p class="text-xs text-gray-400 mt-1">days remaining</p>
-          <div class="mt-2 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-            <% pct = bal.total_days > 0 ? (bal.remaining_days / bal.total_days * 100).clamp(0, 100) : 0 %>
-            <div class="h-full bg-primary-400 rounded-full" style="width: <%= pct %>%"></div>
+<%# ── Leave entitlements ─────────────────────────────────────────── %>
+<% annual = @balances.find { |b| b.leave_type.category.to_s == "annual" } %>
+
+<% if annual %>
+  <%# Annual leave hero card %>
+  <div class="bg-gradient-to-br from-[#0f1a14] to-[#1D9E75]/80 rounded-2xl p-6 mb-4 text-white">
+    <div class="flex items-start justify-between">
+      <div>
+        <p class="text-white/60 text-xs font-semibold uppercase tracking-wider mb-1"><%= annual.leave_type.name %> — <%= Date.current.year %></p>
+        <% if annual.leave_type.requires_balance? %>
+          <p class="text-5xl font-bold leading-none mb-1">
+            <%= annual.remaining_days.to_i %>
+            <span class="text-2xl font-normal text-white/50">/ <%= annual.total_days.to_i %></span>
+          </p>
+          <p class="text-white/60 text-sm mt-1">days remaining</p>
+          <div class="mt-4 h-2 bg-white/15 rounded-full overflow-hidden w-64 max-w-full">
+            <% pct = annual.total_days > 0 ? (annual.remaining_days / annual.total_days * 100).clamp(0, 100) : 0 %>
+            <div class="h-full bg-white/70 rounded-full transition-all" style="width: <%= pct %>%"></div>
+          </div>
+          <div class="flex items-center gap-6 mt-3 text-xs text-white/50">
+            <span><%= annual.accrued_days.to_i %> accrued</span>
+            <span><%= annual.used_days.to_i %> used</span>
+            <% if annual.override_days != 0 %>
+              <span><%= annual.override_days > 0 ? "+" : "" %><%= annual.override_days %> adjusted</span>
+            <% end %>
           </div>
         <% else %>
-          <p class="text-2xl font-bold text-gray-900">∞</p>
-          <p class="text-xs text-gray-400 mt-1">unlimited</p>
+          <p class="text-4xl font-bold leading-none">Unlimited</p>
+          <p class="text-white/60 text-sm mt-1">no cap on days</p>
         <% end %>
       </div>
-    <% end %>
+      <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+        <svg class="w-6 h-6 text-white/70" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
+        </svg>
+      </div>
+    </div>
   </div>
 <% end %>
 
-<%# Leave history %>
-<div>
-  <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">History</h2>
-
-  <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-    <% if @requests.empty? %>
-      <div class="flex flex-col items-center justify-center py-20 text-center px-8">
-        <p class="text-sm font-medium text-gray-700">No leave requests yet</p>
-        <p class="text-xs text-gray-400 mt-1">Your requests will appear here once submitted</p>
-      </div>
-    <% else %>
-      <table class="min-w-full">
-        <thead>
-          <tr class="bg-gray-50/70 border-b border-gray-100">
-            <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400">Leave type</th>
-            <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden sm:table-cell">Dates</th>
-            <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden sm:table-cell">Days</th>
-            <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400">Status</th>
-            <th class="text-right px-5 py-3.5"></th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100">
-          <% @requests.each do |req| %>
-            <tr class="hover:bg-gray-50/60 transition-colors">
-              <td class="px-5 py-4 text-sm font-medium text-gray-900"><%= req.leave_type.name %></td>
-              <td class="px-5 py-4 text-sm text-gray-600 hidden sm:table-cell">
-                <%= req.start_date.strftime("%-d %b") %> – <%= req.end_date.strftime("%-d %b %Y") %>
-              </td>
-              <td class="px-5 py-4 text-sm text-gray-600 hidden sm:table-cell">
-                <%= req.total_days %> day<%= req.total_days == 1 ? "" : "s" %>
-              </td>
-              <td class="px-5 py-4">
-                <% status_colors = { "pending" => "bg-amber-50 text-amber-700 ring-amber-600/20", "approved" => "bg-emerald-50 text-emerald-700 ring-emerald-600/20", "declined" => "bg-red-50 text-red-700 ring-red-600/20", "cancelled" => "bg-gray-100 text-gray-500 ring-gray-500/20" } %>
-                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset <%= status_colors.fetch(req.status, "bg-gray-100 text-gray-500 ring-gray-500/20") %>">
-                  <%= req.status.capitalize %>
-                </span>
-              </td>
-              <td class="px-5 py-4 text-right">
-                <% if req.pending? %>
-                  <%= button_to "Cancel",
-                        employee_leave_request_path(@current_company.slug, req),
-                        method: :delete,
-                        data: { turbo_confirm: "Cancel this leave request?" },
-                        class: "text-xs font-medium text-red-500 hover:text-red-700" %>
-                <% end %>
-              </td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
-    <% end %>
+<% unless annual %>
+  <div class="mb-8 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-700">
+    No annual leave has been configured yet. Contact your HR admin.
   </div>
+<% end %>
+
+<%# ── Request history ──────────────────────────────────────────────── %>
+<h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">History</h2>
+
+<div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+  <% if @requests.empty? %>
+    <div class="flex flex-col items-center justify-center py-16 text-center px-8">
+      <p class="text-sm font-medium text-gray-700">No leave requests yet</p>
+      <p class="text-xs text-gray-400 mt-1">Submit your first request using the button above</p>
+    </div>
+  <% else %>
+    <table class="min-w-full">
+      <thead>
+        <tr class="bg-gray-50/70 border-b border-gray-100">
+          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400">Leave type</th>
+          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden sm:table-cell">Dates</th>
+          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden sm:table-cell">Days</th>
+          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400">Status</th>
+          <th class="text-right px-5 py-3.5"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <% @requests.each do |req| %>
+          <tr class="hover:bg-gray-50/60 transition-colors">
+            <td class="px-5 py-4 text-sm font-medium text-gray-900"><%= req.leave_type.name %></td>
+            <td class="px-5 py-4 text-sm text-gray-600 hidden sm:table-cell">
+              <%= req.start_date.strftime("%-d %b") %> – <%= req.end_date.strftime("%-d %b %Y") %>
+            </td>
+            <td class="px-5 py-4 text-sm text-gray-600 hidden sm:table-cell">
+              <%= req.total_days %> day<%= req.total_days == 1 ? "" : "s" %>
+            </td>
+            <td class="px-5 py-4">
+              <% status_colors = { "pending" => "bg-amber-50 text-amber-700 ring-amber-600/20", "approved" => "bg-emerald-50 text-emerald-700 ring-emerald-600/20", "declined" => "bg-red-50 text-red-700 ring-red-600/20", "cancelled" => "bg-gray-100 text-gray-500 ring-gray-500/20" } %>
+              <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset <%= status_colors.fetch(req.status, "bg-gray-100 text-gray-500 ring-gray-500/20") %>">
+                <%= req.status.capitalize %>
+              </span>
+            </td>
+            <td class="px-5 py-4 text-right">
+              <% if req.pending? %>
+                <%= button_to "Cancel",
+                      employee_leave_request_path(@current_company.slug, req),
+                      method: :delete,
+                      data: { turbo_confirm: "Cancel this leave request?" },
+                      class: "text-xs font-medium text-red-500 hover:text-red-700" %>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
 </div>

@@ -5,12 +5,26 @@ module Employee
     before_action :set_request, only: [:destroy]
 
     def index
-      @leave_types = @current_company.leave_types.active
-      @balances    = LeaveBalance.for_employee_this_year(@profile)
+      leave_types  = @current_company.leave_types.active.order(:name)
+      existing     = LeaveBalance.for_employee_this_year(@profile)
                                  .includes(:leave_type)
-      @requests    = @profile.leave_requests
-                              .includes(:leave_type)
-                              .order(requested_at: :desc)
+                                 .index_by(&:leave_type_id)
+
+      @balances = leave_types.map do |lt|
+        existing[lt.id] || LeaveBalance.new(
+          employee_profile: @profile,
+          leave_type:       lt,
+          year:             Date.current.year,
+          total_days:       lt.default_days,
+          accrued_days:     lt.requires_balance? ? accrued_days_for(lt) : 0,
+          used_days:        0,
+          override_days:    0
+        )
+      end
+
+      @requests = @profile.leave_requests
+                          .includes(:leave_type)
+                          .order(requested_at: :desc)
     end
 
     def new
@@ -58,6 +72,16 @@ module Employee
 
     def set_request
       @leave_request = @profile.leave_requests.find(params[:id])
+    end
+
+    def accrued_days_for(leave_type)
+      return leave_type.default_days unless leave_type.accrues_monthly?
+      months = [
+        (Date.current.year * 12 + Date.current.month) -
+        (@profile.employment_start_date.year * 12 + @profile.employment_start_date.month),
+        Date.current.month
+      ].min
+      (months * leave_type.default_days / 12.0).round(1)
     end
 
     def leave_request_params

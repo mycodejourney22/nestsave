@@ -533,22 +533,38 @@
   <% end %>
 
 <% elsif active_tab == "leave" %>
-  <%# Leave balances %>
+  <%# Leave balances — all active leave types %>
   <div class="mb-8">
     <h2 class="text-base font-semibold text-gray-900 mb-4">Leave Balances (<%= Date.current.year %>)</h2>
-    <% if @leave_balances.any? %>
+    <% if @leave_types.any? %>
       <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-5">
-        <% @leave_balances.each do |bal| %>
+        <% @leave_types.each do |lt| %>
+          <% bal = @leave_balances[lt.id] %>
           <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
-            <p class="text-xs font-medium text-gray-500 mb-2"><%= bal.leave_type.name %></p>
-            <% if bal.leave_type.requires_balance? %>
-              <p class="text-2xl font-bold text-gray-900"><%= bal.remaining_days.to_i %><span class="text-sm font-normal text-gray-400 ml-1">/ <%= bal.total_days.to_i %></span></p>
-              <p class="text-xs text-gray-400 mt-1">days remaining</p>
-              <button type="button"
-                class="inline-block mt-2 text-xs font-medium text-primary-600 hover:text-primary-700 js-override-btn"
-                data-balance-id="<%= bal.id %>"
-                data-remaining="<%= bal.remaining_days %>"
-                data-name="<%= bal.leave_type.name %>">Override</button>
+            <p class="text-xs font-medium text-gray-500 mb-2"><%= lt.name %></p>
+            <% if lt.requires_balance? %>
+              <% if bal %>
+                <p class="text-2xl font-bold text-gray-900"><%= bal.remaining_days.to_i %><span class="text-sm font-normal text-gray-400 ml-1">/ <%= bal.total_days.to_i %></span></p>
+                <p class="text-xs text-gray-400 mt-1">days remaining</p>
+                <button type="button"
+                  class="inline-block mt-2 text-xs font-medium text-primary-600 hover:text-primary-700 js-balance-btn"
+                  data-mode="override"
+                  data-balance-id="<%= bal.id %>"
+                  data-remaining="<%= bal.remaining_days %>"
+                  data-name="<%= lt.name %>"
+                  data-override-url="<%= override_admin_leave_balance_path(@current_company.slug, bal) %>">Override</button>
+              <% else %>
+                <p class="text-2xl font-bold text-gray-900 text-gray-300">—</p>
+                <p class="text-xs text-gray-400 mt-1">not initialised</p>
+                <button type="button"
+                  class="inline-block mt-2 text-xs font-medium text-amber-600 hover:text-amber-700 js-balance-btn"
+                  data-mode="create"
+                  data-leave-type-id="<%= lt.id %>"
+                  data-default-days="<%= lt.default_days %>"
+                  data-name="<%= lt.name %>"
+                  data-create-url="<%= admin_leave_balances_path(@current_company.slug) %>"
+                  data-profile-id="<%= @profile.id %>">Initialize</button>
+              <% end %>
             <% else %>
               <p class="text-2xl font-bold text-gray-900">∞</p>
               <p class="text-xs text-gray-400 mt-1">unlimited</p>
@@ -558,12 +574,12 @@
       </div>
     <% else %>
       <div class="bg-white rounded-xl border border-gray-200 shadow-sm flex items-center justify-center py-10 text-center mb-5">
-        <p class="text-sm text-gray-400">No leave balances for this year.</p>
+        <p class="text-sm text-gray-400">No leave types configured. <%= link_to "Add leave types", admin_leave_types_path(@current_company.slug), class: "text-primary-600 hover:underline" %>.</p>
       </div>
     <% end %>
   </div>
 
-  <%# Leave history %>
+  <%# Leave request history %>
   <div>
     <h2 class="text-base font-semibold text-gray-900 mb-4">Leave Requests</h2>
     <% if @leave_requests.empty? %>
@@ -605,16 +621,20 @@
     <% end %>
   </div>
 
-  <%# Override modal %>
-  <div id="override-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+  <%# Shared balance modal (override existing OR initialize new) %>
+  <div id="balance-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40">
     <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4">
-      <h3 class="text-base font-semibold text-gray-900 mb-1">Override leave balance</h3>
-      <p id="override-label" class="text-sm text-gray-500 mb-4"></p>
-      <%= form_with url: "#", method: :patch, id: "override-form" do |f| %>
+      <h3 id="balance-modal-title" class="text-base font-semibold text-gray-900 mb-1"></h3>
+      <p id="balance-modal-subtitle" class="text-sm text-gray-500 mb-4"></p>
+      <form id="balance-form" method="post">
+        <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+        <input type="hidden" name="_method" id="balance-method-override" value="">
+        <input type="hidden" name="employee_profile_id" id="balance-profile-id" value="">
+        <input type="hidden" name="leave_type_id" id="balance-leave-type-id" value="">
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1.5">New remaining days</label>
-            <input type="number" name="remaining_days" id="override-days" min="0" step="0.5"
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">Remaining days</label>
+            <input type="number" name="remaining_days" id="balance-days" min="0" step="0.5"
               class="block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
           </div>
           <div>
@@ -623,37 +643,50 @@
               class="block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
           </div>
         </div>
-        <input type="hidden" name="_method" value="patch">
-        <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
         <div class="flex items-center gap-3 mt-5">
           <button type="submit" class="flex-1 bg-primary-500 hover:bg-primary-600 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors">
             Save
           </button>
-          <button type="button" id="override-cancel" class="flex-1 border border-gray-300 text-gray-600 font-medium py-2.5 rounded-xl text-sm hover:bg-gray-50 transition-colors">
+          <button type="button" id="balance-cancel" class="flex-1 border border-gray-300 text-gray-600 font-medium py-2.5 rounded-xl text-sm hover:bg-gray-50 transition-colors">
             Cancel
           </button>
         </div>
-      <% end %>
+      </form>
     </div>
   </div>
 
   <script>
-    const overrideModal = document.getElementById("override-modal");
-    const overrideForm  = document.getElementById("override-form");
-    const slug = "<%= @current_company.slug %>";
+    const balanceModal    = document.getElementById("balance-modal");
+    const balanceForm     = document.getElementById("balance-form");
+    const methodOverride  = document.getElementById("balance-method-override");
 
-    document.querySelectorAll(".js-override-btn").forEach(btn => {
+    document.querySelectorAll(".js-balance-btn").forEach(btn => {
       btn.addEventListener("click", function() {
-        const balId = this.dataset.balanceId;
-        document.getElementById("override-label").textContent = this.dataset.name;
-        document.getElementById("override-days").value = this.dataset.remaining;
-        overrideForm.action = `/c/${slug}/admin/leave_balances/${balId}/override`;
-        overrideModal.classList.remove("hidden");
+        const mode = this.dataset.mode;
+        if (mode === "override") {
+          document.getElementById("balance-modal-title").textContent    = "Override leave balance";
+          document.getElementById("balance-modal-subtitle").textContent = this.dataset.name;
+          document.getElementById("balance-days").value = this.dataset.remaining;
+          document.getElementById("balance-profile-id").value   = "";
+          document.getElementById("balance-leave-type-id").value = "";
+          methodOverride.name  = "_method";
+          methodOverride.value = "patch";
+          balanceForm.action   = this.dataset.overrideUrl;
+        } else {
+          document.getElementById("balance-modal-title").textContent    = "Initialise leave balance";
+          document.getElementById("balance-modal-subtitle").textContent = this.dataset.name;
+          document.getElementById("balance-days").value = this.dataset.defaultDays;
+          document.getElementById("balance-profile-id").value   = this.dataset.profileId;
+          document.getElementById("balance-leave-type-id").value = this.dataset.leaveTypeId;
+          methodOverride.name  = "";
+          balanceForm.action   = this.dataset.createUrl;
+        }
+        balanceModal.classList.remove("hidden");
       });
     });
 
-    document.getElementById("override-cancel")?.addEventListener("click", () => overrideModal.classList.add("hidden"));
-    overrideModal?.addEventListener("click", e => { if (e.target === overrideModal) overrideModal.classList.add("hidden"); });
+    document.getElementById("balance-cancel")?.addEventListener("click", () => balanceModal.classList.add("hidden"));
+    balanceModal?.addEventListener("click", e => { if (e.target === balanceModal) balanceModal.classList.add("hidden"); });
   </script>
 
 <% elsif active_tab == "savings_advances" %>

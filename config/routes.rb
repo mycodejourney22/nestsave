@@ -70,7 +70,7 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :leave_balances, only: [] do
+      resources :leave_balances, only: [:create] do
         member { patch :override }
       end
 
