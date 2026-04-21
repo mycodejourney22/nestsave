@@ -4,37 +4,35 @@
 <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-6">
   <div class="bg-gradient-to-r from-primary-500 to-primary-600 px-6 py-5">
     <div class="flex items-center gap-4">
-      <%# Avatar %>
       <div class="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
         <span class="text-white text-lg font-bold">
           <%= current_user.full_name.split.map { |w| w[0] }.first(2).join.upcase %>
         </span>
       </div>
-      <%# Identity %>
       <div class="flex-1 min-w-0">
         <h1 class="text-white text-lg font-bold leading-tight"><%= current_user.full_name %></h1>
         <p class="text-primary-100 text-sm mt-0.5">
           <% if @profile&.job_title.present? %>
             <%= @profile.job_title %>
-            <% if @profile.department.present? %>
-              &middot; <%= @profile.department %>
+            <% if @current_team %>
+              &middot; <%= @current_team.name %>
+            <% end %>
+            <% if @profile.employment_start_date.present? %>
+              &middot; since <%= @profile.employment_start_date.strftime("%-d %b %Y") %>
             <% end %>
           <% else %>
             <%= @current_company.name %>
           <% end %>
         </p>
       </div>
-      <%# Salary pill %>
       <% if @current_salary %>
         <div class="bg-white/15 rounded-xl px-4 py-2 text-center flex-shrink-0 hidden sm:block">
-          <p class="text-white/70 text-xs mb-0.5">Monthly salary</p>
-          <p class="text-white text-base font-bold"><%= gbp(@current_salary) %></p>
+          <p class="text-white/70 text-xs mb-0.5">Current salary</p>
+          <p class="text-white text-base font-bold text-emerald-300"><%= gbp(@current_salary) %></p>
         </div>
       <% end %>
     </div>
   </div>
-
-  <%# Meta row %>
   <% if @profile %>
     <div class="flex flex-wrap items-center gap-x-6 gap-y-2 px-6 py-3 bg-gray-50/60 border-t border-gray-100 text-xs text-gray-500">
       <% if @profile.employee_number.present? %>
@@ -53,106 +51,127 @@
   <% end %>
 </div>
 
-
-<%# ── Stat cards ───────────────────────────────────────────────── %>
-<%
-  total_saved    = @active_plans.sum(&:total_saved)
-  monthly_commit = @active_plans.sum(&:monthly_amount)
-%>
-<div class="grid grid-cols-3 gap-4 mb-6">
-  <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-    <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Total saved</p>
-    <p class="text-xl font-bold text-gray-900"><%= gbp(total_saved) %></p>
-    <p class="text-xs text-gray-400 mt-0.5"><%= @active_plans.size %> active <%= "plan".pluralize(@active_plans.size) %></p>
+<%# ── Leave balances ───────────────────────────────────────────── %>
+<div class="mb-7">
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-base font-semibold text-gray-900">Leave balances</h2>
+    <%= link_to "Request leave",
+          new_employee_leave_request_path(@current_company.slug),
+          class: "inline-flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700" %>
   </div>
-  <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-    <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Monthly saving</p>
-    <p class="text-xl font-bold text-gray-900"><%= gbp(monthly_commit) %></p>
-    <p class="text-xs text-gray-400 mt-0.5">from salary</p>
-  </div>
-  <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-    <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1.5">Notifications</p>
-    <p class="text-xl font-bold text-gray-900"><%= @notifications.size %></p>
-    <p class="text-xs text-gray-400 mt-0.5">unread</p>
-  </div>
-</div>
 
-<div class="grid lg:grid-cols-5 gap-6">
-
-  <%# ── Left column ─────────────────────────────────────────────── %>
-  <div class="lg:col-span-3 space-y-6">
-
-    <%# Savings plans section %>
-    <section id="savings">
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="text-base font-semibold text-gray-900">Savings Plans</h2>
-        <%= link_to new_employee_savings_plan_path(@current_company.slug),
-              class: "inline-flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700" do %>
-          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-          New plan
-        <% end %>
-      </div>
-
-      <% all_plans = (@active_plans + @pending_plans).first(4) %>
-      <% if all_plans.empty? %>
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col items-center justify-center py-10 text-center px-6">
-          <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-            <svg class="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          </div>
-          <p class="text-sm font-medium text-gray-700 mb-1">No savings plans yet</p>
-          <%= link_to "Start saving", new_employee_savings_plan_path(@current_company.slug),
-                class: "text-xs font-medium text-primary-600 hover:text-primary-700" %>
-        </div>
-      <% else %>
-        <div class="space-y-3">
-          <% all_plans.each do |plan| %>
-            <%= link_to employee_savings_plan_path(@current_company.slug, plan),
-                  class: "block bg-white rounded-xl border border-gray-200 shadow-sm px-5 py-4 hover:border-primary-200 hover:shadow-md transition-all group" do %>
-              <div class="flex items-start justify-between mb-3">
-                <div>
-                  <p class="text-sm font-semibold text-gray-900 group-hover:text-primary-700 transition-colors"><%= plan.name %></p>
-                  <p class="text-xs text-gray-400 mt-0.5"><%= plan.duration_months %> months &middot; matures <%= plan.maturity_date.strftime("%-d %b %Y") %></p>
-                </div>
-                <div class="text-right flex-shrink-0 ml-4">
-                  <%= status_badge(plan.status) %>
-                  <p class="text-base font-bold text-gray-900 mt-1"><%= gbp(plan.monthly_amount) %><span class="text-xs font-normal text-gray-400">/mo</span></p>
-                </div>
-              </div>
-              <% if plan.active? %>
-                <div class="w-full bg-gray-100 rounded-full h-1.5 mb-1.5">
-                  <div class="bg-primary-500 h-1.5 rounded-full transition-all" style="width: <%= plan.progress_percentage %>%"></div>
-                </div>
-                <div class="flex items-center justify-between text-xs text-gray-400">
-                  <span><%= gbp(plan.total_saved) %> saved</span>
-                  <span><%= gbp(plan.target_amount) %> target</span>
-                </div>
-              <% end %>
-            <% end %>
+  <% if @leave_balances.empty? %>
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm px-5 py-6 text-center">
+      <p class="text-sm text-gray-400">No leave balances yet. Contact HR to set up your entitlement.</p>
+    </div>
+  <% else %>
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+      <% @leave_balances.each do |bal| %>
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+          <p class="text-xs font-medium text-gray-500 mb-2"><%= bal.leave_type.name %></p>
+          <% if bal.leave_type.requires_balance? %>
+            <% remaining = bal.remaining_days.to_f
+               day_color = if remaining > 7 then "text-emerald-600"
+                           elsif remaining >= 3 then "text-amber-500"
+                           else "text-red-600"
+                           end %>
+            <p class="text-2xl font-bold <%= day_color %>"><%= bal.remaining_days.to_i %></p>
+            <p class="text-xs text-gray-400 mt-0.5">of <%= bal.total_days.to_i %> days</p>
+          <% else %>
+            <p class="text-2xl font-bold text-gray-300">—</p>
+            <p class="text-xs text-gray-400 mt-0.5">as needed</p>
           <% end %>
         </div>
-        <% total_plans = @active_plans.size + @pending_plans.size %>
-        <% if total_plans > 4 %>
-          <div class="mt-3">
-            <%= link_to "View all #{total_plans} plans →",
-                  employee_savings_plans_path(@current_company.slug),
-                  class: "text-sm text-primary-600 hover:text-primary-700 font-medium" %>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<%# ── This week's rota (only if team + published rota exist) ──── %>
+<% if @current_rota %>
+  <div class="mb-7">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-base font-semibold text-gray-900">
+        <%= @current_team.name %> &middot; <span class="font-normal text-gray-500">week of <%= @current_rota.week_start.strftime("%-d %b") %></span>
+      </h2>
+      <%= link_to "View full rota",
+            employee_rota_path(@current_company.slug, @current_rota),
+            class: "text-xs font-medium text-primary-600 hover:text-primary-700" %>
+    </div>
+
+    <%
+      entries_by_date = @my_entries.index_by(&:work_date)
+      week_days = (0..4).map { |i| @current_rota.week_start + i }
+    %>
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div class="grid grid-cols-5">
+        <% week_days.each do |day| %>
+          <% entry = entries_by_date[day] %>
+          <div class="border-r last:border-r-0 border-gray-100 p-4 text-center">
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1"><%= day.strftime("%a") %></p>
+            <p class="text-xs text-gray-400 mb-2"><%= day.strftime("%-d %b") %></p>
+            <% if entry %>
+              <p class="text-xs font-semibold text-emerald-700">
+                <%= entry.start_time&.strftime("%H:%M") %>–<%= entry.end_time&.strftime("%H:%M") %>
+              </p>
+            <% else %>
+              <p class="text-xs font-medium text-gray-300">Off</p>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<div class="h-px bg-gray-100 mb-7"></div>
+
+<%# ── My savings & advances ────────────────────────────────────── %>
+<div class="mb-7">
+  <div class="flex items-center justify-between mb-3">
+    <h2 class="text-base font-semibold text-gray-900">My savings &amp; advances</h2>
+    <%= link_to "View all →",
+          employee_savings_plans_path(@current_company.slug),
+          class: "text-xs font-medium text-primary-600 hover:text-primary-700" %>
+  </div>
+
+  <% if @active_plans.empty? && @open_advance.nil? %>
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm px-5 py-8 text-center">
+      <p class="text-sm text-gray-500 mb-3">No active savings plans or advances</p>
+      <div class="flex items-center justify-center gap-4">
+        <%= link_to "Start saving",
+              new_employee_savings_plan_path(@current_company.slug),
+              class: "text-xs font-medium text-primary-600 hover:text-primary-700" %>
+        <span class="text-gray-300">|</span>
+        <%= link_to "Apply for advance",
+              new_employee_salary_advance_path(@current_company.slug),
+              class: "text-xs font-medium text-primary-600 hover:text-primary-700" %>
+      </div>
+    </div>
+  <% else %>
+    <div class="space-y-3">
+      <% @active_plans.first(3).each do |plan| %>
+        <%= link_to employee_savings_plan_path(@current_company.slug, plan),
+              class: "block bg-white rounded-xl border border-gray-200 shadow-sm px-5 py-4 hover:border-primary-200 transition-all group" do %>
+          <div class="flex items-start justify-between mb-2">
+            <div>
+              <p class="text-sm font-semibold text-gray-900 group-hover:text-primary-700 transition-colors"><%= plan.name %></p>
+              <p class="text-xs text-gray-400 mt-0.5">Matures <%= plan.maturity_date.strftime("%-d %b %Y") %></p>
+            </div>
+            <div class="text-right flex-shrink-0 ml-4">
+              <p class="text-sm font-bold text-gray-900"><%= gbp(plan.monthly_amount) %><span class="text-xs font-normal text-gray-400">/mo</span></p>
+              <p class="text-xs text-gray-500 mt-0.5"><%= gbp(plan.total_saved) %> saved</p>
+            </div>
+          </div>
+          <div class="w-full bg-gray-100 rounded-full h-1.5 mb-1">
+            <div class="bg-primary-500 h-1.5 rounded-full transition-all" style="width: <%= plan.progress_percentage %>%"></div>
+          </div>
+          <div class="flex items-center justify-between text-xs text-gray-400">
+            <span><%= plan.progress_percentage %>% complete</span>
+            <span><%= plan.months_remaining %> months remaining</span>
           </div>
         <% end %>
       <% end %>
-    </section>
-
-    <%# Open advance section %>
-    <section id="advance">
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="text-base font-semibold text-gray-900">Salary Advance</h2>
-        <% unless @open_advance || @current_membership.has_active_advance? %>
-          <%= link_to new_employee_salary_advance_path(@current_company.slug),
-                class: "inline-flex items-center gap-1 text-xs font-medium text-primary-600 hover:text-primary-700" do %>
-            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-            Apply
-          <% end %>
-        <% end %>
-      </div>
 
       <% if @open_advance %>
         <%
@@ -161,16 +180,16 @@
           pct         = total_count > 0 ? ((paid_count.to_f / total_count) * 100).round : 0
         %>
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm px-5 py-4">
-          <div class="flex items-start justify-between mb-3">
+          <div class="flex items-start justify-between mb-2">
             <div>
-              <p class="text-sm font-semibold text-gray-900">Advance of <%= gbp(@open_advance.amount) %></p>
+              <p class="text-sm font-semibold text-gray-900">Open advance &middot; <%= gbp(@open_advance.amount) %></p>
               <p class="text-xs text-gray-400 mt-0.5"><%= @open_advance.repayment_months %> months &middot; <%= gbp(@open_advance.monthly_instalment) %>/mo</p>
             </div>
             <%= status_badge(@open_advance.status) %>
           </div>
           <% if @open_advance.repaying? %>
-            <div class="w-full bg-gray-100 rounded-full h-1.5 mb-1.5">
-              <div class="bg-indigo-500 h-1.5 rounded-full" style="width: <%= pct %>%"></div>
+            <div class="w-full bg-gray-100 rounded-full h-1.5 mb-1">
+              <div class="bg-indigo-400 h-1.5 rounded-full" style="width: <%= pct %>%"></div>
             </div>
             <div class="flex items-center justify-between text-xs text-gray-400">
               <span><%= paid_count %> of <%= total_count %> payments made</span>
@@ -178,107 +197,46 @@
             </div>
           <% end %>
         </div>
-      <% else %>
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm flex flex-col items-center justify-center py-10 text-center px-6">
-          <p class="text-sm font-medium text-gray-700 mb-1">No open advance</p>
-          <% if @current_salary %>
-            <p class="text-xs text-gray-400 mb-3">You can apply for up to <%= gbp(@current_salary) %></p>
-            <%= link_to "Apply for advance", new_employee_salary_advance_path(@current_company.slug),
-                  class: "text-xs font-medium text-primary-600 hover:text-primary-700" %>
-          <% end %>
-        </div>
       <% end %>
-    </section>
+    </div>
+  <% end %>
+</div>
 
-  </div>
+<%# ── Quick links ─────────────────────────────────────────────── %>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+  <%= link_to new_employee_leave_request_path(@current_company.slug),
+        class: "bg-white rounded-xl border border-gray-200 shadow-sm px-4 py-4 hover:border-primary-200 hover:shadow-md transition-all group" do %>
+    <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center mb-2 group-hover:bg-primary-100 transition-colors">
+      <svg class="w-4 h-4 text-primary-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
+    </div>
+    <p class="text-xs font-semibold text-gray-800">Request leave</p>
+    <p class="text-xs text-gray-400">Submit a request</p>
+  <% end %>
 
-  <%# ── Right column ─────────────────────────────────────────────── %>
-  <div class="lg:col-span-2 space-y-6">
+  <%= link_to employee_profile_path(@current_company.slug),
+        class: "bg-white rounded-xl border border-gray-200 shadow-sm px-4 py-4 hover:border-primary-200 hover:shadow-md transition-all group" do %>
+    <div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center mb-2 group-hover:bg-gray-200 transition-colors">
+      <svg class="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/></svg>
+    </div>
+    <p class="text-xs font-semibold text-gray-800">My profile</p>
+    <p class="text-xs text-gray-400">View details</p>
+  <% end %>
 
-    <%# Recent transactions %>
-    <section id="activity">
-      <div class="flex items-center justify-between mb-3">
-        <h2 class="text-base font-semibold text-gray-900">Recent Activity</h2>
-        <%= link_to "View all →", employee_transactions_path(@current_company.slug),
-              class: "text-xs font-medium text-primary-600 hover:text-primary-700" %>
-      </div>
+  <%= link_to employee_rotas_path(@current_company.slug),
+        class: "bg-white rounded-xl border border-gray-200 shadow-sm px-4 py-4 hover:border-primary-200 hover:shadow-md transition-all group" do %>
+    <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center mb-2 group-hover:bg-blue-100 transition-colors">
+      <svg class="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12"/></svg>
+    </div>
+    <p class="text-xs font-semibold text-gray-800">View rota</p>
+    <p class="text-xs text-gray-400">Your schedule</p>
+  <% end %>
 
-      <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-        <% if @recent_transactions.empty? %>
-          <div class="flex flex-col items-center justify-center py-10 text-center px-6">
-            <p class="text-sm text-gray-400">No transactions yet</p>
-          </div>
-        <% else %>
-          <ul class="divide-y divide-gray-100">
-            <% @recent_transactions.each do |tx| %>
-              <li class="flex items-center gap-3 px-5 py-3.5">
-                <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0
-                            <%= %w[savings_withdrawal advance_disbursement].include?(tx.kind) ? "bg-red-50" : "bg-emerald-50" %>">
-                  <svg class="w-3.5 h-3.5 <%= %w[savings_withdrawal advance_disbursement].include?(tx.kind) ? "text-red-500" : "text-emerald-600" %>"
-                       fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <% if %w[savings_withdrawal advance_disbursement].include?(tx.kind) %>
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18"/>
-                    <% else %>
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3"/>
-                    <% end %>
-                  </svg>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <p class="text-xs font-medium text-gray-800 truncate"><%= kind_label(tx.kind) %></p>
-                  <p class="text-xs text-gray-400"><%= tx.created_at.strftime("%d %b %Y") %></p>
-                </div>
-                <p class="text-xs font-semibold flex-shrink-0 <%= kind_color(tx.kind) %>">
-                  <%= kind_sign(tx.kind) %><%= gbp(tx.amount) %>
-                </p>
-              </li>
-            <% end %>
-          </ul>
-        <% end %>
-      </div>
-    </section>
-
-    <%# Quick links %>
-    <section id="quick-links">
-      <h2 class="text-base font-semibold text-gray-900 mb-3">Quick links</h2>
-      <div class="grid grid-cols-2 gap-3">
-        <%= link_to employee_savings_plans_path(@current_company.slug),
-              class: "bg-white rounded-xl border border-gray-200 shadow-sm px-4 py-4 hover:border-primary-200 hover:shadow-md transition-all group" do %>
-          <div class="w-8 h-8 rounded-lg bg-primary-50 flex items-center justify-center mb-2 group-hover:bg-primary-100 transition-colors">
-            <svg class="w-4 h-4 text-primary-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          </div>
-          <p class="text-xs font-semibold text-gray-800">My savings</p>
-          <p class="text-xs text-gray-400">View all plans</p>
-        <% end %>
-
-        <%= link_to new_employee_savings_plan_path(@current_company.slug),
-              class: "bg-white rounded-xl border border-gray-200 shadow-sm px-4 py-4 hover:border-primary-200 hover:shadow-md transition-all group" do %>
-          <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center mb-2 group-hover:bg-emerald-100 transition-colors">
-            <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-          </div>
-          <p class="text-xs font-semibold text-gray-800">New plan</p>
-          <p class="text-xs text-gray-400">Start saving</p>
-        <% end %>
-
-        <%= link_to employee_salary_advances_path(@current_company.slug),
-              class: "bg-white rounded-xl border border-gray-200 shadow-sm px-4 py-4 hover:border-primary-200 hover:shadow-md transition-all group" do %>
-          <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center mb-2 group-hover:bg-blue-100 transition-colors">
-            <svg class="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/></svg>
-          </div>
-          <p class="text-xs font-semibold text-gray-800">Advances</p>
-          <p class="text-xs text-gray-400">View history</p>
-        <% end %>
-
-        <%= link_to employee_transactions_path(@current_company.slug),
-              class: "bg-white rounded-xl border border-gray-200 shadow-sm px-4 py-4 hover:border-primary-200 hover:shadow-md transition-all group" do %>
-          <div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center mb-2 group-hover:bg-gray-200 transition-colors">
-            <svg class="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
-          </div>
-          <p class="text-xs font-semibold text-gray-800">Transactions</p>
-          <p class="text-xs text-gray-400">Full history</p>
-        <% end %>
-      </div>
-    </section>
-
-  </div>
-
+  <%= link_to employee_documents_path(@current_company.slug),
+        class: "bg-white rounded-xl border border-gray-200 shadow-sm px-4 py-4 hover:border-primary-200 hover:shadow-md transition-all group" do %>
+    <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center mb-2 group-hover:bg-emerald-100 transition-colors">
+      <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+    </div>
+    <p class="text-xs font-semibold text-gray-800">My documents</p>
+    <p class="text-xs text-gray-400">View files</p>
+  <% end %>
 </div>
