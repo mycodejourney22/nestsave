@@ -153,12 +153,13 @@
     document.getElementById("entry-cancel")?.addEventListener("click", () => modal.classList.add("hidden"));
     modal?.addEventListener("click", e => { if (e.target === modal) modal.classList.add("hidden"); });
 
+    const entriesPath = "<%= admin_rota_rota_entries_path(@current_company.slug, @rota) %>";
+
     form?.addEventListener("submit", async function(e) {
       e.preventDefault();
       const data = new FormData(form);
-      const slug = "<%= @current_company.slug %>";
       const token = document.querySelector('meta[name="csrf-token"]')?.content;
-      const res = await fetch(`/c/${slug}/admin/rotas/${rotaId}/rota_entries`, {
+      const res = await fetch(entriesPath, {
         method: "POST",
         headers: { "X-CSRF-Token": token, "Accept": "application/json" },
         body: data
