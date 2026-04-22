@@ -10,8 +10,8 @@ module Admin
     def show
       @members = @team.employee_profiles
                       .where(deleted_at: nil)
-                      .includes(:company_membership)
-                      .order(:first_name, :last_name)
+                      .includes(company_membership: :user)
+                      .order(:preferred_name, :employee_number)
     end
 
     def new
