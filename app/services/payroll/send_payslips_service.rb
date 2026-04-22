@@ -26,7 +26,7 @@ module Payroll
           payslips_sent_at: Time.current
         )
 
-        Payroll::MonthEndProcessor.call(company: @run.company)
+        # Month-end processing (advance repayments, savings) handled separately
       end
 
       Result.success(@run)
