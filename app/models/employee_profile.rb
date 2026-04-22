@@ -27,8 +27,8 @@ class EmployeeProfile < ApplicationRecord
 
   before_validation :generate_employee_number, on: :create
 
-  delegate :user, :company, to: :company_membership
-  delegate :full_name,      to: :user
+  delegate :user, :company, to: :company_membership, allow_nil: true
+  delegate :full_name,      to: :user, allow_nil: true
 
   def current_salary
     salary_histories.order(effective_date: :desc).first&.amount
