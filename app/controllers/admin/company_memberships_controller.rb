@@ -78,6 +78,7 @@ module Admin
       end
 
       @membership.soft_delete!
+      @membership.employee_profile&.soft_delete!
 
       respond_to do |format|
         format.turbo_stream do
