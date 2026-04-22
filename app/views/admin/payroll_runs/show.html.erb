@@ -161,24 +161,19 @@
         </tr>
       <% end %>
 
-      <%# Totals row %>
+      <%# Totals row — use run-level aggregates to stay consistent with summary cards %>
       <tr class="bg-gray-50/80 border-t-2 border-gray-200">
         <td class="px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider">Total</td>
         <td class="hidden lg:table-cell"></td>
         <td class="px-5 py-3.5 text-sm font-bold text-gray-900 text-right hidden sm:table-cell">
-          <%= gbp(@entries.sum(:base_salary)) %>
+          <%= gbp(@run.total_gross) %>
         </td>
-        <td class="px-5 py-3.5 text-sm font-bold text-emerald-700 text-right hidden sm:table-cell">
-          <%
-            total_bonuses = @entries.sum { |e| e.earnings_items.where.not(item_type: "base_salary").sum(:amount) }
-          %>
-          <%= total_bonuses > 0 ? "+#{gbp(total_bonuses)}" : "—" %>
-        </td>
+        <td class="px-5 py-3.5 text-sm font-bold text-emerald-700 text-right hidden sm:table-cell">—</td>
         <td class="px-5 py-3.5 text-sm font-bold text-red-600 text-right hidden sm:table-cell">
-          <%= gbp(@entries.sum(:total_deductions)) %>
+          <%= gbp(@run.total_deductions) %>
         </td>
         <td class="px-5 py-3.5 text-sm font-bold text-gray-900 text-right">
-          <%= gbp(@entries.sum(:net_pay)) %>
+          <%= gbp(@run.total_net) %>
         </td>
         <td></td>
       </tr>

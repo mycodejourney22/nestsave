@@ -64,7 +64,7 @@ Rails.application.routes.draw do
       resources :teams,               only: [:index, :show, :new, :create, :edit, :update, :destroy]
       resources :leave_types,         only: [:index, :new, :create, :edit, :update]
 
-      resources :payroll_runs, only: [:index, :new, :create, :show] do
+      resources :payroll_runs, only: [:index, :new, :create, :show, :destroy] do
         member do
           patch :finalise
           patch :reopen

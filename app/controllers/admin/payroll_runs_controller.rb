@@ -3,7 +3,7 @@ require "csv"
 module Admin
   class PayrollRunsController < ApplicationController
     before_action :require_hr!
-    before_action :set_run, only: [:show, :finalise, :reopen, :send_payslips, :export_csv]
+    before_action :set_run, only: [:show, :destroy, :finalise, :reopen, :send_payslips, :export_csv]
 
     def index
       @runs = @current_company.payroll_runs
@@ -37,6 +37,16 @@ module Admin
       @entries = @run.payroll_entries
                      .includes(:payroll_items, employee_profile: { company_membership: :user })
                      .order(:created_at)
+    end
+
+    def destroy
+      unless @run.draft?
+        return redirect_to admin_payroll_runs_path(@current_company.slug),
+                           alert: "Only draft payroll runs can be deleted."
+      end
+      @run.destroy!
+      redirect_to admin_payroll_runs_path(@current_company.slug),
+                  notice: "#{@run.period_label} payroll run deleted."
     end
 
     def finalise
