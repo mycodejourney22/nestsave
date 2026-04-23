@@ -1,0 +1,48 @@
+<%# Forgot password page — matches sign-in card style %>
+
+<div class="w-full max-w-sm">
+  <%# Logo %>
+  <div class="flex flex-col items-center mb-8">
+    <div class="w-12 h-12 rounded-2xl bg-primary-500 flex items-center justify-center mb-4">
+      <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>
+      </svg>
+    </div>
+    <h1 class="text-2xl font-semibold text-white">NestSave</h1>
+    <p class="text-white/60 text-sm mt-1">Employee savings &amp; salary advances</p>
+  </div>
+
+  <%# Card %>
+  <div class="bg-white rounded-2xl shadow-2xl shadow-black/30 p-8">
+    <h2 class="text-lg font-semibold text-gray-900 mb-2">Forgot your password?</h2>
+    <p class="text-sm text-gray-500 mb-6">Enter your email and we'll send you reset instructions.</p>
+
+    <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post }) do |f| %>
+      <% if flash[:alert] %>
+        <div class="mb-5 rounded-lg bg-red-50 border border-red-200 px-3 py-2.5 text-sm text-red-700">
+          <%= flash[:alert] %>
+        </div>
+      <% end %>
+      <% if flash[:notice] %>
+        <div class="mb-5 rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2.5 text-sm text-emerald-700">
+          <%= flash[:notice] %>
+        </div>
+      <% end %>
+
+      <div class="mb-5">
+        <label class="block text-sm font-medium text-gray-700 mb-1.5">Email address</label>
+        <%= f.email_field :email, autofocus: true, autocomplete: "email",
+              class: "block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition",
+              placeholder: "you@company.co.uk" %>
+      </div>
+
+      <%= f.submit "Send reset instructions",
+            class: "w-full bg-primary-500 hover:bg-primary-600 active:bg-primary-700 text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition-colors cursor-pointer" %>
+    <% end %>
+  </div>
+
+  <p class="text-center text-white/50 text-sm mt-6">
+    <%= link_to "← Back to sign in", new_user_session_path,
+          class: "text-primary-400 hover:text-primary-300 font-medium transition-colors" %>
+  </p>
+</div>
