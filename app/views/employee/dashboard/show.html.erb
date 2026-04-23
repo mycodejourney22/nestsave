@@ -98,8 +98,8 @@
       entries_by_date = @my_entries.index_by(&:work_date)
       week_days = (0..4).map { |i| @current_rota.week_start + i }
     %>
-    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-      <div class="grid grid-cols-5">
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
+      <div class="grid grid-cols-5 min-w-[320px]">
         <% week_days.each do |day| %>
           <% entry = entries_by_date[day] %>
           <div class="border-r last:border-r-0 border-gray-100 p-4 text-center">

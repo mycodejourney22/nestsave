@@ -13,7 +13,7 @@
 </div>
 
 <%# Stats %>
-<div class="grid grid-cols-3 gap-4 mb-7">
+<div class="grid grid-cols-3 sm:grid-cols-3 gap-3 sm:gap-4 mb-7">
   <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
     <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Total</p>
     <p class="text-2xl font-bold text-gray-900"><%= @stats[:total] %></p>
@@ -58,73 +58,108 @@
           class: "bg-primary-500 hover:bg-primary-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors" %>
   </div>
 <% else %>
-  <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" data-search-target="list">
-    <table class="min-w-full">
-      <thead>
-        <tr class="bg-gray-50/70 border-b border-gray-100">
-          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400">Employee</th>
-          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden sm:table-cell">Job title</th>
-          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden md:table-cell">Department</th>
-          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden lg:table-cell">Joined</th>
-          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden md:table-cell">Type</th>
-          <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden sm:table-cell">Status</th>
-          <th class="text-right px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400"></th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-100">
-        <% @memberships.each do |m| %>
-          <% profile = m.employee_profile %>
-          <% suspended = m.suspended? %>
-          <tr class="<%= suspended ? "bg-gray-50/40 opacity-60" : "hover:bg-gray-50/60" %> transition-colors" data-search-row
-              data-name="<%= m.user.full_name.downcase  if m.user %>"
-              data-title="<%= profile&.job_title.to_s.downcase %>"
-              data-dept="<%= profile&.department.to_s.downcase %>">
-            <td class="px-5 py-4">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full <%= suspended ? "bg-gray-200" : "bg-primary-100" %> flex items-center justify-center flex-shrink-0">
-                  <span class="<%= suspended ? "text-gray-400" : "text-primary-600" %> text-xs font-semibold">
-                    <%= m.user.full_name.split.map { |w| w[0] }.first(2).join.upcase if m.user %>
-                  </span>
-                </div>
-                <div>
-                  <p class="text-sm font-medium text-gray-900"><%= m.user.full_name if m.user %></p>
-                  <% if profile %>
-                    <p class="text-xs text-gray-400"><%= profile.employee_number %></p>
-                  <% else %>
-                    <p class="text-xs text-amber-500">No profile yet</p>
+  <div data-search-target="list">
+    <%# Mobile card view (< sm) %>
+    <div class="sm:hidden space-y-2">
+      <% @memberships.each do |m| %>
+        <% profile = m.employee_profile %>
+        <% suspended = m.suspended? %>
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 <%= suspended ? "opacity-60" : "" %>"
+             data-search-row
+             data-name="<%= m.user&.full_name.to_s.downcase %>"
+             data-title="<%= profile&.job_title.to_s.downcase %>"
+             data-dept="<%= profile&.department.to_s.downcase %>">
+          <div class="flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-10 h-10 rounded-full <%= suspended ? "bg-gray-200" : "bg-primary-100" %> flex items-center justify-center flex-shrink-0">
+                <span class="<%= suspended ? "text-gray-400" : "text-primary-600" %> text-sm font-semibold">
+                  <%= m.user&.full_name&.split&.map { |w| w[0] }&.first(2)&.join&.upcase %>
+                </span>
+              </div>
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-gray-900 truncate"><%= m.user&.full_name || m.display_name %></p>
+                <p class="text-xs text-gray-500 truncate"><%= profile&.job_title.presence || "No job title" %></p>
+                <div class="flex items-center gap-2 mt-1 flex-wrap">
+                  <%= status_badge(m.status) %>
+                  <% if profile&.team %>
+                    <span class="text-xs text-gray-400"><%= profile.team.name %></span>
                   <% end %>
                 </div>
               </div>
-            </td>
-            <td class="px-5 py-4 text-sm text-gray-700 hidden sm:table-cell">
-              <%= profile&.job_title.presence || "—" %>
-            </td>
-            <td class="px-5 py-4 text-sm text-gray-700 hidden md:table-cell">
-              <%= profile&.department.presence || "—" %>
-            </td>
-            <td class="px-5 py-4 text-xs text-gray-400 hidden lg:table-cell whitespace-nowrap">
-              <%= profile&.employment_start_date&.strftime("%d %b %Y") || m.created_at.strftime("%d %b %Y") %>
-            </td>
-            <td class="px-5 py-4 hidden md:table-cell">
-              <% if profile %>
-                <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset bg-blue-50 text-blue-700 ring-blue-600/20">
-                  <%= profile.employment_type.humanize %>
-                </span>
-              <% end %>
-            </td>
-            <td class="px-5 py-4 hidden sm:table-cell"><%= status_badge(m.status) %></td>
-            <td class="px-5 py-4 text-right">
-              <% if profile %>
-                <%= link_to "View profile",
-                      admin_employee_profile_path(@current_company.slug, profile),
-                      class: "text-xs font-semibold text-primary-600 hover:text-primary-800 bg-primary-50 hover:bg-primary-100 px-3 py-1.5 rounded-lg transition-colors" %>
-              <% else %>
-                <span class="text-xs text-gray-400">No profile</span>
-              <% end %>
-            </td>
+            </div>
+            <% if profile %>
+              <%= link_to "View",
+                    admin_employee_profile_path(@current_company.slug, profile),
+                    class: "text-xs font-semibold text-primary-600 bg-primary-50 hover:bg-primary-100 px-3 py-2 rounded-lg transition-colors flex-shrink-0 min-h-[44px] flex items-center" %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Desktop table view (>= sm) %>
+    <div class="hidden sm:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <table class="min-w-full">
+        <thead>
+          <tr class="bg-gray-50/70 border-b border-gray-100">
+            <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400">Employee</th>
+            <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400">Job title</th>
+            <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden md:table-cell">Department</th>
+            <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden lg:table-cell">Joined</th>
+            <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden md:table-cell">Type</th>
+            <th class="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider text-gray-400">Status</th>
+            <th class="text-right px-5 py-3.5"></th>
           </tr>
-        <% end %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          <% @memberships.each do |m| %>
+            <% profile = m.employee_profile %>
+            <% suspended = m.suspended? %>
+            <tr class="<%= suspended ? "bg-gray-50/40 opacity-60" : "hover:bg-gray-50/60" %> transition-colors" data-search-row
+                data-name="<%= m.user&.full_name.to_s.downcase %>"
+                data-title="<%= profile&.job_title.to_s.downcase %>"
+                data-dept="<%= profile&.department.to_s.downcase %>">
+              <td class="px-5 py-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-full <%= suspended ? "bg-gray-200" : "bg-primary-100" %> flex items-center justify-center flex-shrink-0">
+                    <span class="<%= suspended ? "text-gray-400" : "text-primary-600" %> text-xs font-semibold">
+                      <%= m.user&.full_name&.split&.map { |w| w[0] }&.first(2)&.join&.upcase %>
+                    </span>
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-gray-900"><%= m.user&.full_name %></p>
+                    <p class="text-xs <%= profile ? "text-gray-400" : "text-amber-500" %>">
+                      <%= profile ? profile.employee_number : "No profile yet" %>
+                    </p>
+                  </div>
+                </div>
+              </td>
+              <td class="px-5 py-4 text-sm text-gray-700"><%= profile&.job_title.presence || "—" %></td>
+              <td class="px-5 py-4 text-sm text-gray-700 hidden md:table-cell"><%= profile&.department.presence || "—" %></td>
+              <td class="px-5 py-4 text-xs text-gray-400 hidden lg:table-cell whitespace-nowrap">
+                <%= profile&.employment_start_date&.strftime("%d %b %Y") || m.created_at.strftime("%d %b %Y") %>
+              </td>
+              <td class="px-5 py-4 hidden md:table-cell">
+                <% if profile %>
+                  <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset bg-blue-50 text-blue-700 ring-blue-600/20">
+                    <%= profile.employment_type.humanize %>
+                  </span>
+                <% end %>
+              </td>
+              <td class="px-5 py-4"><%= status_badge(m.status) %></td>
+              <td class="px-5 py-4 text-right">
+                <% if profile %>
+                  <%= link_to "View profile",
+                        admin_employee_profile_path(@current_company.slug, profile),
+                        class: "text-xs font-semibold text-primary-600 hover:text-primary-800 bg-primary-50 hover:bg-primary-100 px-3 py-1.5 rounded-lg transition-colors" %>
+                <% else %>
+                  <span class="text-xs text-gray-400">No profile</span>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
   </div>
 <% end %>

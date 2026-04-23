@@ -32,7 +32,7 @@
     <%# Name & account %>
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-5">
       <h2 class="text-sm font-semibold text-gray-900 mb-5">Name &amp; account</h2>
-      <div class="grid grid-cols-2 gap-x-5 gap-y-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-4">
         <div class="col-span-2">
           <label class="block text-sm font-medium text-gray-700 mb-1.5">Full name</label>
           <input type="text"
@@ -57,7 +57,7 @@
     <%# Personal details %>
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-5">
       <h2 class="text-sm font-semibold text-gray-900 mb-5">Personal details</h2>
-      <div class="grid grid-cols-2 gap-x-5 gap-y-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-4">
         <div>
           <%= f.label :preferred_name, "Preferred name", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
           <%= f.text_field :preferred_name, placeholder: "e.g. Seun",
@@ -94,7 +94,7 @@
     <%# Employment details %>
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-5">
       <h2 class="text-sm font-semibold text-gray-900 mb-5">Employment</h2>
-      <div class="grid grid-cols-2 gap-x-5 gap-y-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-4">
         <div>
           <%= f.label :job_title, "Job title", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
           <%= f.text_field :job_title, placeholder: "e.g. Software Engineer",
@@ -145,7 +145,7 @@
     <%# Right to work %>
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-5">
       <h2 class="text-sm font-semibold text-gray-900 mb-5">Right to work</h2>
-      <div class="grid grid-cols-2 gap-x-5 gap-y-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-4">
         <div>
           <%= f.label :right_to_work_status, "Status", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
           <%= f.text_field :right_to_work_status, placeholder: "e.g. British Citizen",
@@ -174,7 +174,7 @@
           <%= f.text_field :address_line_2,
                 class: "block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition" %>
         </div>
-        <div class="grid grid-cols-2 gap-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div>
             <%= f.label :city, "City", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
             <%= f.text_field :city, placeholder: "London",

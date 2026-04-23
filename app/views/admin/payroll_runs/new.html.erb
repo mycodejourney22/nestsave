@@ -31,7 +31,7 @@
   <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
     <%= form_with url: admin_payroll_runs_path(@current_company.slug), method: :post,
                   data: { turbo: false } do |f| %>
-      <div class="grid grid-cols-2 gap-4 mb-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1.5">Month</label>
           <select name="month"
