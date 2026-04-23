@@ -38,8 +38,8 @@
 <%# Profile header %>
 <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
   <div class="flex items-start gap-5">
-    <div class="w-16 h-16 rounded-2xl <%= @pending_invite ? "bg-amber-100" : @membership.suspended? ? "bg-red-100" : "bg-primary-100" %> flex items-center justify-center flex-shrink-0">
-      <span class="<%= @pending_invite ? "text-amber-600" : "text-primary-600" %> text-xl font-bold">
+    <div class="w-16 h-16 rounded-2xl <%= @pending_invite ? "bg-amber-100" : @is_former ? "bg-gray-100" : @membership.suspended? ? "bg-red-100" : "bg-primary-100" %> flex items-center justify-center flex-shrink-0">
+      <span class="<%= @pending_invite ? "text-amber-600" : @is_former ? "text-gray-400" : "text-primary-600" %> text-xl font-bold">
         <%= @display_initials %>
       </span>
     </div>
@@ -58,9 +58,24 @@
               &middot; <%= @profile.department %>
             <% end %>
           </p>
+          <% if @is_former %>
+            <p class="text-xs text-gray-400 mt-1">
+              Joined <%= @profile.employment_start_date&.strftime("%-d %b %Y") %>
+              <% if @profile.employment_end_date %>
+                &middot; Left <%= @profile.employment_end_date.strftime("%-d %b %Y") %>
+              <% end %>
+              <% if @membership.leaving_reason.present? %>
+                &middot; <%= @membership.leaving_reason %>
+              <% end %>
+            </p>
+          <% end %>
           <div class="flex items-center gap-2 mt-2 flex-wrap">
             <span class="text-xs text-gray-400 font-mono bg-gray-100 px-2 py-0.5 rounded"><%= @profile.employee_number %></span>
-            <%= status_badge(@profile.company_membership.status) %>
+            <% if @is_former %>
+              <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset bg-gray-100 text-gray-500 ring-gray-400/20">Former employee</span>
+            <% else %>
+              <%= status_badge(@profile.company_membership.status) %>
+            <% end %>
             <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset bg-blue-50 text-blue-700 ring-blue-600/20">
               <%= @profile.employment_type.humanize %>
             </span>
@@ -70,6 +85,7 @@
           <%= link_to "Edit profile",
                 edit_admin_employee_profile_path(@current_company.slug, @profile),
                 class: "inline-flex items-center gap-1.5 bg-white border border-gray-200 hover:border-gray-300 text-gray-700 px-3.5 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm" %>
+          <% unless @is_former %>
           <% if @membership.suspended? %>
             <%= button_to "Reactivate",
                   reactivate_admin_employee_profile_path(@current_company.slug, @profile),
@@ -82,6 +98,7 @@
                   method: :patch,
                   data: { turbo_confirm: "Are you sure? This will revoke #{@display_name}'s access immediately." },
                   class: "inline-flex items-center bg-red-50 border border-red-200 hover:border-red-300 text-red-600 px-3.5 py-2 rounded-xl text-sm font-medium transition-colors" %>
+          <% end %>
           <% end %>
         </div>
       </div>

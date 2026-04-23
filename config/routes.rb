@@ -95,6 +95,10 @@ Rails.application.routes.draw do
       end
 
       resources :employee_profiles, only: [:index, :show, :edit, :update] do
+        collection do
+          get  :new_former
+          post :create_former
+        end
         member do
           patch :deactivate
           patch :reactivate

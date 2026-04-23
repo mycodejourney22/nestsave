@@ -1,0 +1,128 @@
+<%# Admin — Add Former Employee %>
+
+<div class="flex items-center gap-2 text-sm text-gray-400 mb-7">
+  <%= link_to "Employees", admin_employee_profiles_path(@current_company.slug),
+        class: "hover:text-gray-600 transition-colors" %>
+  <span>/</span>
+  <span class="text-gray-700 font-medium">Add former employee</span>
+</div>
+
+<div class="max-w-2xl">
+  <h1 class="text-2xl font-semibold text-gray-900 mb-1">Add former employee</h1>
+  <p class="text-gray-500 text-sm mb-7">
+    Manually create a historical record. No email will be sent and the account will be immediately archived.
+  </p>
+
+  <% if flash[:alert] %>
+    <div class="mb-6 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700"><%= flash[:alert] %></div>
+  <% end %>
+
+  <%= form_with url: create_former_admin_employee_profiles_path(@current_company.slug),
+                method: :post do |f| %>
+
+    <%# Personal details %>
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-5">
+      <h2 class="text-sm font-semibold text-gray-900 mb-5">Personal details</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">First name <span class="text-red-500">*</span></label>
+          <input type="text" name="former[first_name]" required
+                 class="block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition"
+                 placeholder="e.g. Amara">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Last name <span class="text-red-500">*</span></label>
+          <input type="text" name="former[last_name]" required
+                 class="block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition"
+                 placeholder="e.g. Okafor">
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Email <span class="text-red-500">*</span></label>
+          <input type="email" name="former[email]" required
+                 class="block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition"
+                 placeholder="amara@example.com">
+          <p class="text-xs text-gray-400 mt-1">Used as a unique identifier. No emails will be sent.</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Phone <span class="text-gray-400 font-normal">(optional)</span></label>
+          <input type="tel" name="former[phone]"
+                 class="block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition"
+                 placeholder="+44 7700 900000">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Date of birth <span class="text-gray-400 font-normal">(optional)</span></label>
+          <input type="date" name="former[date_of_birth]"
+                 class="block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition">
+        </div>
+      </div>
+    </div>
+
+    <%# Employment details %>
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-5">
+      <h2 class="text-sm font-semibold text-gray-900 mb-5">Employment details</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-4">
+        <div class="sm:col-span-2">
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Job title <span class="text-red-500">*</span></label>
+          <input type="text" name="former[job_title]" required
+                 class="block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition"
+                 placeholder="e.g. Senior Designer">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Team <span class="text-gray-400 font-normal">(optional)</span></label>
+          <select name="former[team_id]"
+                  class="block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition bg-white">
+            <option value="">No team</option>
+            <% @teams.each do |team| %>
+              <option value="<%= team.id %>"><%= team.name %></option>
+            <% end %>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Start date <span class="text-red-500">*</span></label>
+          <input type="date" name="former[start_date]" required
+                 class="block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Leaving date <span class="text-red-500">*</span></label>
+          <input type="date" name="former[leaving_date]" required
+                 class="block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1.5">Reason for leaving <span class="text-red-500">*</span></label>
+          <select name="former[leaving_reason]" required
+                  class="block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition bg-white">
+            <option value="">— Select reason —</option>
+            <% @leaving_reasons.each do |reason| %>
+              <option value="<%= reason %>"><%= reason %></option>
+            <% end %>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <%# Salary %>
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
+      <h2 class="text-sm font-semibold text-gray-900 mb-1">Final salary <span class="text-gray-400 font-normal text-xs">(optional)</span></h2>
+      <p class="text-xs text-gray-400 mb-4">If entered, a salary history record will be created with the start date as the effective date.</p>
+      <div class="max-w-xs">
+        <label class="block text-sm font-medium text-gray-700 mb-1.5">Amount (<%= currency_symbol %>)</label>
+        <div class="relative">
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium"><%= currency_symbol %></span>
+          <input type="number" name="former[final_salary]" step="0.01" min="0"
+                 placeholder="0.00"
+                 class="block w-full rounded-lg border border-gray-300 pl-7 pr-3 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition">
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <button type="submit"
+              class="bg-primary-500 hover:bg-primary-600 text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-colors">
+        Add former employee
+      </button>
+      <%= link_to "Cancel",
+            admin_employee_profiles_path(@current_company.slug),
+            class: "text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors px-2 py-2" %>
+    </div>
+  <% end %>
+</div>

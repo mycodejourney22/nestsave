@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_23_205207) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_23_211902) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -104,6 +104,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_23_205207) do
     t.datetime "invitation_sent_at"
     t.datetime "invitation_accepted_at"
     t.uuid "team_id"
+    t.string "leaving_reason"
     t.index ["company_id"], name: "index_company_memberships_on_company_id"
     t.index ["deleted_at"], name: "index_company_memberships_on_deleted_at"
     t.index ["invitation_token"], name: "index_company_memberships_on_invitation_token", unique: true, where: "(invitation_token IS NOT NULL)"

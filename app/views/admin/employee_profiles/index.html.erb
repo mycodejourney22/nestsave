@@ -5,15 +5,40 @@
     <h1 class="text-2xl font-semibold text-gray-900">Employees</h1>
     <p class="text-gray-500 text-sm mt-1">All team members and their HR profiles</p>
   </div>
-  <%= link_to new_admin_company_membership_path(@current_company.slug),
-        class: "inline-flex items-center gap-1.5 bg-primary-500 hover:bg-primary-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm" do %>
-    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-    Add employee
-  <% end %>
+  <%# Add employee dropdown (native <details> — no JS needed) %>
+  <details class="relative" id="add-employee-menu">
+    <summary class="list-none cursor-pointer inline-flex items-center gap-1.5 bg-primary-500 hover:bg-primary-600 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm select-none">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+      Add employee
+      <svg class="w-3 h-3 ml-0.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+    </summary>
+    <div class="absolute right-0 mt-1.5 w-52 bg-white rounded-xl shadow-lg border border-gray-200 z-20 py-1 overflow-hidden">
+      <%= link_to new_admin_company_membership_path(@current_company.slug),
+            class: "flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors" do %>
+        <div class="w-7 h-7 rounded-lg bg-primary-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+          <svg class="w-3.5 h-3.5 text-primary-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
+        </div>
+        <div>
+          <p class="text-sm font-semibold text-gray-900">Invite new employee</p>
+          <p class="text-xs text-gray-400 mt-0.5">Send an invitation email</p>
+        </div>
+      <% end %>
+      <%= link_to new_former_admin_employee_profiles_path(@current_company.slug),
+            class: "flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors" do %>
+        <div class="w-7 h-7 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+          <svg class="w-3.5 h-3.5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 00.75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 00-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0112 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 01-.673-.38m0 0A2.18 2.18 0 013 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 013.413-.387m7.5 0V5.25A2.25 2.25 0 0013.5 3h-3a2.25 2.25 0 00-2.25 2.25v.894m7.5 0a48.667 48.667 0 00-7.5 0M12 12.75h.008v.008H12v-.008z"/></svg>
+        </div>
+        <div>
+          <p class="text-sm font-semibold text-gray-900">Add former employee</p>
+          <p class="text-xs text-gray-400 mt-0.5">No email — archived immediately</p>
+        </div>
+      <% end %>
+    </div>
+  </details>
 </div>
 
 <%# Stats %>
-<div class="grid grid-cols-3 sm:grid-cols-3 gap-3 sm:gap-4 mb-7">
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-7">
   <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
     <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Total</p>
     <p class="text-2xl font-bold text-gray-900"><%= @stats[:total] %></p>
@@ -23,16 +48,23 @@
     <p class="text-2xl font-bold text-emerald-600"><%= @stats[:active] %></p>
   </div>
   <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+    <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Former</p>
+    <p class="text-2xl font-bold text-gray-400"><%= @stats[:former] %></p>
+  </div>
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
     <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Departments</p>
     <p class="text-2xl font-bold text-gray-900"><%= @stats[:departments] %></p>
   </div>
 </div>
 
-<%# Active / All filter %>
+<%# Active / Former / All filter %>
 <div class="flex items-center gap-1 mb-4 bg-gray-100 rounded-lg p-1 w-fit">
   <%= link_to "Active",
         admin_employee_profiles_path(@current_company.slug, filter: "active"),
         class: "px-3 py-1.5 rounded-md text-sm font-medium transition-colors #{@filter == "active" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}" %>
+  <%= link_to "Former",
+        admin_employee_profiles_path(@current_company.slug, filter: "former"),
+        class: "px-3 py-1.5 rounded-md text-sm font-medium transition-colors #{@filter == "former" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}" %>
   <%= link_to "All",
         admin_employee_profiles_path(@current_company.slug, filter: "all"),
         class: "px-3 py-1.5 rounded-md text-sm font-medium transition-colors #{@filter == "all" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}" %>
@@ -63,16 +95,16 @@
     <div class="sm:hidden space-y-2">
       <% @memberships.each do |m| %>
         <% profile = m.employee_profile %>
-        <% suspended = m.suspended? %>
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 <%= suspended ? "opacity-60" : "" %>"
+        <% muted = m.suspended? || m.left? %>
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 <%= muted ? "opacity-60" : "" %>"
              data-search-row
              data-name="<%= m.user&.full_name.to_s.downcase %>"
              data-title="<%= profile&.job_title.to_s.downcase %>"
              data-dept="<%= profile&.department.to_s.downcase %>">
           <div class="flex items-center justify-between gap-3">
             <div class="flex items-center gap-3 min-w-0">
-              <div class="w-10 h-10 rounded-full <%= suspended ? "bg-gray-200" : "bg-primary-100" %> flex items-center justify-center flex-shrink-0">
-                <span class="<%= suspended ? "text-gray-400" : "text-primary-600" %> text-sm font-semibold">
+              <div class="w-10 h-10 rounded-full <%= muted ? "bg-gray-200" : "bg-primary-100" %> flex items-center justify-center flex-shrink-0">
+                <span class="<%= muted ? "text-gray-400" : "text-primary-600" %> text-sm font-semibold">
                   <%= m.user&.full_name&.split&.map { |w| w[0] }&.first(2)&.join&.upcase %>
                 </span>
               </div>
@@ -80,7 +112,11 @@
                 <p class="text-sm font-semibold text-gray-900 truncate"><%= m.user&.full_name || m.display_name %></p>
                 <p class="text-xs text-gray-500 truncate"><%= profile&.job_title.presence || "No job title" %></p>
                 <div class="flex items-center gap-2 mt-1 flex-wrap">
-                  <%= status_badge(m.status) %>
+                  <% if m.left? %>
+                    <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset bg-gray-100 text-gray-500 ring-gray-400/20">Former</span>
+                  <% else %>
+                    <%= status_badge(m.status) %>
+                  <% end %>
                   <% if profile&.team %>
                     <span class="text-xs text-gray-400"><%= profile.team.name %></span>
                   <% end %>
@@ -114,15 +150,15 @@
         <tbody class="divide-y divide-gray-100">
           <% @memberships.each do |m| %>
             <% profile = m.employee_profile %>
-            <% suspended = m.suspended? %>
-            <tr class="<%= suspended ? "bg-gray-50/40 opacity-60" : "hover:bg-gray-50/60" %> transition-colors" data-search-row
+            <% muted = m.suspended? || m.left? %>
+            <tr class="<%= muted ? "bg-gray-50/40 opacity-60" : "hover:bg-gray-50/60" %> transition-colors" data-search-row
                 data-name="<%= m.user&.full_name.to_s.downcase %>"
                 data-title="<%= profile&.job_title.to_s.downcase %>"
                 data-dept="<%= profile&.department.to_s.downcase %>">
               <td class="px-5 py-4">
                 <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded-full <%= suspended ? "bg-gray-200" : "bg-primary-100" %> flex items-center justify-center flex-shrink-0">
-                    <span class="<%= suspended ? "text-gray-400" : "text-primary-600" %> text-xs font-semibold">
+                  <div class="w-8 h-8 rounded-full <%= muted ? "bg-gray-200" : "bg-primary-100" %> flex items-center justify-center flex-shrink-0">
+                    <span class="<%= muted ? "text-gray-400" : "text-primary-600" %> text-xs font-semibold">
                       <%= m.user&.full_name&.split&.map { |w| w[0] }&.first(2)&.join&.upcase %>
                     </span>
                   </div>
@@ -146,7 +182,13 @@
                   </span>
                 <% end %>
               </td>
-              <td class="px-5 py-4"><%= status_badge(m.status) %></td>
+              <td class="px-5 py-4">
+                <% if m.left? %>
+                  <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset bg-gray-100 text-gray-500 ring-gray-400/20">Former</span>
+                <% else %>
+                  <%= status_badge(m.status) %>
+                <% end %>
+              </td>
               <td class="px-5 py-4 text-right">
                 <% if profile %>
                   <%= link_to "View profile",
