@@ -156,6 +156,7 @@ class EmployeeMailer < ApplicationMailer
   private
 
   def formatted_currency(amount)
-    "£#{'%.2f' % amount.to_f}"
+    symbol = @company&.currency_symbol.presence || "£"
+    "#{symbol}#{'%.2f' % amount.to_f}"
   end
 end

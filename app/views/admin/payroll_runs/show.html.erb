@@ -56,7 +56,7 @@
       <% any_zero_net = @entries.any? { |e| e.net_pay <= 0 } %>
       <% if any_zero_net %>
         <span class="inline-flex items-center gap-1.5 bg-gray-100 text-gray-400 px-3.5 py-2 rounded-xl text-sm font-semibold cursor-not-allowed"
-              title="Some entries have £0 or negative net pay. Review before finalising.">
+              title="Some entries have <%= currency_symbol %>0 or negative net pay. Review before finalising.">
           Finalise payroll
         </span>
       <% else %>

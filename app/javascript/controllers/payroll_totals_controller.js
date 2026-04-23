@@ -28,7 +28,7 @@ export default class extends Controller {
   }
 
   format(amount) {
-    const symbol = this.element.dataset.currencySymbol || "£"
+    const symbol = this.element.dataset.currencySymbol || ""
     return symbol + Math.abs(amount).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   }
 
