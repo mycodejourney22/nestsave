@@ -1,5 +1,5 @@
 class ApplicationMailer < ActionMailer::Base
-  default from: "NestSave <notifications@363photography.org>"
+  default from: ENV["MAILER_FROM"]
   layout "mailer"
 
   helper :mailer
