@@ -47,13 +47,14 @@ module Payroll
 
         EmployeeMailer.monthly_savings_confirmed(plan.user, plan).deliver_later
 
-        Notification.create!(
-          user:       plan.user,
-          notifiable: plan,
-          channel:    :in_app,
-          event:      :monthly_savings_confirmed,
-          sent:       true,
-          sent_at:    Time.current
+        NotificationService.create(
+          user:     plan.user,
+          company:  @company,
+          title:    "Monthly savings deducted",
+          body:     "#{@company.currency_symbol}#{'%.2f' % plan.monthly_amount.to_f} saved to #{plan.name}",
+          link:     "/#{@company.slug}/employee/savings_plans/#{plan.id}",
+          category: "savings",
+          event:    "monthly_savings_confirmed"
         )
       rescue => e
         @errors << { plan_id: plan.id, error: e.message }
@@ -90,23 +91,25 @@ module Payroll
         if advance.fully_repaid?
           advance.update!(status: :settled)
           EmployeeMailer.advance_settled(advance.user, advance).deliver_later
-          Notification.create!(
-            user:       advance.user,
-            notifiable: advance,
-            channel:    :in_app,
-            event:      :advance_settled,
-            sent:       true,
-            sent_at:    Time.current
+          NotificationService.create(
+            user:     advance.user,
+            company:  @company,
+            title:    "Salary advance fully repaid",
+            body:     "Your advance of #{@company.currency_symbol}#{'%.2f' % advance.amount.to_f} has been settled",
+            link:     "/#{@company.slug}/employee/salary_advances/#{advance.id}",
+            category: "advance",
+            event:    "advance_settled"
           )
         else
           EmployeeMailer.advance_repayment_deducted(advance.user, advance, schedule).deliver_later
-          Notification.create!(
-            user:       advance.user,
-            notifiable: advance,
-            channel:    :in_app,
-            event:      :advance_repayment_deducted,
-            sent:       true,
-            sent_at:    Time.current
+          NotificationService.create(
+            user:     advance.user,
+            company:  @company,
+            title:    "Advance repayment deducted",
+            body:     "Instalment #{schedule.instalment_number}/#{advance.repayment_months}: #{@company.currency_symbol}#{'%.2f' % schedule.amount.to_f}",
+            link:     "/#{@company.slug}/employee/salary_advances/#{advance.id}",
+            category: "advance",
+            event:    "advance_repayment_deducted"
           )
         end
       rescue => e

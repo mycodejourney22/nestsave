@@ -27,13 +27,14 @@ module SalaryAdvances
 
         EmployeeMailer.advance_disbursed(@advance.user, @advance).deliver_later
 
-        Notification.create!(
-          user:       @advance.user,
-          notifiable: @advance,
-          channel:    :in_app,
-          event:      :advance_disbursed,
-          sent:       true,
-          sent_at:    Time.current
+        NotificationService.create(
+          user:     @advance.user,
+          company:  @advance.company,
+          title:    "Advance disbursed",
+          body:     "#{@advance.company.currency_symbol}#{'%.2f' % @advance.amount.to_f} has been sent to your account",
+          link:     "/#{@advance.company.slug}/employee/salary_advances/#{@advance.id}",
+          category: "advance",
+          event:    "advance_disbursed"
         )
       end
 

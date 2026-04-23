@@ -22,13 +22,14 @@ module SavingsPlans
 
       notify_admins(plan)
 
-      Notification.create!(
-        user:       @membership.user,
-        notifiable: plan,
-        channel:    :in_app,
-        event:      :savings_plan_submitted,
-        sent:       true,
-        sent_at:    Time.current
+      NotificationService.create(
+        user:     @membership.user,
+        company:  @membership.company,
+        title:    "Savings plan submitted",
+        body:     "Your \"#{plan.name}\" plan is awaiting approval",
+        link:     "/#{@membership.company.slug}/employee/savings_plans/#{plan.id}",
+        category: "savings",
+        event:    "savings_plan_submitted"
       )
 
       Result.success(plan)

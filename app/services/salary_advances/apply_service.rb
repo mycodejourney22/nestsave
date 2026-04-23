@@ -22,13 +22,14 @@ module SalaryAdvances
 
       notify_admins(advance)
 
-      Notification.create!(
-        user:       @membership.user,
-        notifiable: advance,
-        channel:    :in_app,
-        event:      :advance_submitted,
-        sent:       true,
-        sent_at:    Time.current
+      NotificationService.create(
+        user:     @membership.user,
+        company:  @membership.company,
+        title:    "Advance request submitted",
+        body:     "Your request for #{@membership.company.currency_symbol}#{'%.2f' % advance.amount.to_f} is under review",
+        link:     "/#{@membership.company.slug}/employee/salary_advances/#{advance.id}",
+        category: "advance",
+        event:    "advance_submitted"
       )
 
       Result.success(advance)

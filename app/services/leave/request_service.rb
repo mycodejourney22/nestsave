@@ -69,6 +69,15 @@ module Leave
 
       reviewers.each do |m|
         PayrollMailer.leave_requested(m.user, request).deliver_later
+        NotificationService.create(
+          user:     m.user,
+          company:  @profile.company,
+          title:    "New leave request",
+          body:     "#{@profile.full_name || "An employee"} requested #{request.total_days} day(s) of #{request.leave_type.name}",
+          link:     "/#{@profile.company.slug}/admin/leave_requests",
+          category: "leave",
+          event:    "leave_requested"
+        )
       end
     end
   end

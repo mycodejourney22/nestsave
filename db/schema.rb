@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_22_154947) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_23_205207) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -271,16 +271,22 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_22_154947) do
 
   create_table "notifications", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.uuid "user_id", null: false
-    t.string "notifiable_type", null: false
-    t.uuid "notifiable_id", null: false
+    t.string "notifiable_type"
+    t.uuid "notifiable_id"
     t.string "channel", default: "email", null: false
-    t.string "event", null: false
+    t.string "event"
     t.boolean "sent", default: false, null: false
     t.datetime "sent_at"
     t.boolean "read", default: false, null: false
     t.datetime "read_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "company_id"
+    t.string "title"
+    t.string "body"
+    t.string "link"
+    t.string "category"
+    t.index ["company_id"], name: "index_notifications_on_company_id"
     t.index ["notifiable_type", "notifiable_id"], name: "index_notifications_on_notifiable_type_and_notifiable_id"
     t.index ["sent"], name: "index_notifications_on_sent"
     t.index ["user_id", "read"], name: "index_notifications_on_user_id_and_read"
@@ -505,6 +511,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_22_154947) do
   add_foreign_key "leave_requests", "leave_types"
   add_foreign_key "leave_requests", "users", column: "reviewed_by"
   add_foreign_key "leave_types", "companies"
+  add_foreign_key "notifications", "companies"
   add_foreign_key "notifications", "users"
   add_foreign_key "payroll_entries", "employee_profiles"
   add_foreign_key "payroll_entries", "payroll_runs"

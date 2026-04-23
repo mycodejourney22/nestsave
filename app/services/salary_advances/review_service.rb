@@ -65,13 +65,15 @@ module SalaryAdvances
     end
 
     def notify_employee(event)
-      Notification.create!(
-        user:       @advance.user,
-        notifiable: @advance,
-        channel:    :in_app,
-        event:      event,
-        sent:       true,
-        sent_at:    Time.current
+      approved = event == :advance_approved
+      NotificationService.create(
+        user:     @advance.user,
+        company:  @advance.company,
+        title:    approved ? "Advance request approved" : "Advance request declined",
+        body:     approved ? "Your advance will be disbursed shortly" : "Your advance request was not approved",
+        link:     "/#{@advance.company.slug}/employee/salary_advances/#{@advance.id}",
+        category: "advance",
+        event:    event.to_s
       )
     end
   end

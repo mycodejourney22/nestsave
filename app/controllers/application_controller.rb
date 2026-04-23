@@ -4,8 +4,9 @@ class ApplicationController < ActionController::Base
   include Redirectable
 
   before_action :authenticate_user!
-  before_action :set_current_company, unless: :devise_controller?
+  before_action :set_current_company,    unless: :devise_controller?
   before_action :set_current_membership, unless: :devise_controller?
+  before_action :load_bell_data,         unless: :devise_controller?
 
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
   rescue_from ActiveRecord::RecordNotFound, with: :not_found
@@ -64,5 +65,18 @@ class ApplicationController < ActionController::Base
 
   def after_sign_out_path_for(_resource_or_scope)
     root_path
+  end
+
+  def load_bell_data
+    return unless @current_company && user_signed_in?
+    @unread_count = current_user.notifications
+                                .where(company: @current_company)
+                                .where.not(title: nil)
+                                .unread
+                                .count
+    @recent_notifications = current_user.notifications
+                                        .where(company: @current_company)
+                                        .for_bell
+                                        .limit(10)
   end
 end

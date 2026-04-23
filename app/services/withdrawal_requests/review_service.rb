@@ -58,13 +58,16 @@ module WithdrawalRequests
     private
 
     def notify_employee(event)
-      Notification.create!(
-        user:       @request.user,
-        notifiable: @request,
-        channel:    :in_app,
-        event:      event,
-        sent:       true,
-        sent_at:    Time.current
+      approved = event == :withdrawal_approved
+      plan     = @request.savings_plan
+      NotificationService.create(
+        user:     @request.user,
+        company:  @request.company,
+        title:    approved ? "Withdrawal approved" : "Withdrawal declined",
+        body:     approved ? "#{@request.company.currency_symbol}#{'%.2f' % @request.amount.to_f} from #{plan.name} is on its way" : "Your withdrawal from #{plan.name} was not approved",
+        link:     "/#{@request.company.slug}/employee/savings_plans/#{plan.id}",
+        category: "savings",
+        event:    event.to_s
       )
     end
   end

@@ -23,6 +23,15 @@ module Leave
           )
           deduct_balance if @request.leave_balance
           EmployeeMailer.leave_approved(@request.user, @request).deliver_later
+          NotificationService.create(
+            user:     @request.user,
+            company:  @request.company,
+            title:    "Leave request approved",
+            body:     "Your #{@request.leave_type.name} request has been approved",
+            link:     "/#{@request.company.slug}/employee/leave_requests",
+            category: "leave",
+            event:    "leave_approved"
+          )
         else
           @request.update!(
             status:      :declined,
@@ -31,6 +40,15 @@ module Leave
             review_note: @note
           )
           EmployeeMailer.leave_declined(@request.user, @request, @note).deliver_later
+          NotificationService.create(
+            user:     @request.user,
+            company:  @request.company,
+            title:    "Leave request declined",
+            body:     "Your #{@request.leave_type.name} request was not approved",
+            link:     "/#{@request.company.slug}/employee/leave_requests",
+            category: "leave",
+            event:    "leave_declined"
+          )
         end
       end
       Result.success(@request)

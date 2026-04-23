@@ -39,13 +39,15 @@ module SavingsPlans
     private
 
     def notify_employee(event)
-      Notification.create!(
-        user:       @plan.user,
-        notifiable: @plan,
-        channel:    :in_app,
-        event:      event,
-        sent:       true,
-        sent_at:    Time.current
+      approved = event == :savings_plan_approved
+      NotificationService.create(
+        user:     @plan.user,
+        company:  @plan.company,
+        title:    approved ? "Savings plan approved" : "Savings plan declined",
+        body:     approved ? "Your \"#{@plan.name}\" plan is now active" : "Your \"#{@plan.name}\" plan was not approved",
+        link:     "/#{@plan.company.slug}/employee/savings_plans/#{@plan.id}",
+        category: "savings",
+        event:    event.to_s
       )
     end
   end
