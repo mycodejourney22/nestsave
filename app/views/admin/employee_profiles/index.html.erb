@@ -28,6 +28,16 @@
   </div>
 </div>
 
+<%# Active / All filter %>
+<div class="flex items-center gap-1 mb-4 bg-gray-100 rounded-lg p-1 w-fit">
+  <%= link_to "Active",
+        admin_employee_profiles_path(@current_company.slug, filter: "active"),
+        class: "px-3 py-1.5 rounded-md text-sm font-medium transition-colors #{@filter == "active" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}" %>
+  <%= link_to "All",
+        admin_employee_profiles_path(@current_company.slug, filter: "all"),
+        class: "px-3 py-1.5 rounded-md text-sm font-medium transition-colors #{@filter == "all" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}" %>
+</div>
+
 <%# Search — client-side filter via Stimulus %>
 <div class="mb-4" data-controller="search">
   <div class="relative">
@@ -64,14 +74,15 @@
       <tbody class="divide-y divide-gray-100">
         <% @memberships.each do |m| %>
           <% profile = m.employee_profile %>
-          <tr class="hover:bg-gray-50/60 transition-colors" data-search-row
+          <% suspended = m.suspended? %>
+          <tr class="<%= suspended ? "bg-gray-50/40 opacity-60" : "hover:bg-gray-50/60" %> transition-colors" data-search-row
               data-name="<%= m.user.full_name.downcase  if m.user %>"
               data-title="<%= profile&.job_title.to_s.downcase %>"
               data-dept="<%= profile&.department.to_s.downcase %>">
             <td class="px-5 py-4">
               <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
-                  <span class="text-primary-600 text-xs font-semibold">
+                <div class="w-8 h-8 rounded-full <%= suspended ? "bg-gray-200" : "bg-primary-100" %> flex items-center justify-center flex-shrink-0">
+                  <span class="<%= suspended ? "text-gray-400" : "text-primary-600" %> text-xs font-semibold">
                     <%= m.user.full_name.split.map { |w| w[0] }.first(2).join.upcase if m.user %>
                   </span>
                 </div>

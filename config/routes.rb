@@ -95,6 +95,10 @@ Rails.application.routes.draw do
       end
 
       resources :employee_profiles, only: [:index, :show, :edit, :update] do
+        member do
+          patch :deactivate
+          patch :reactivate
+        end
         resources :employment_histories, only: [:new, :create, :edit, :update, :destroy]
         resources :salary_histories,     only: [:index, :new, :create]
         resources :bank_details,         only: [:show, :new, :create]

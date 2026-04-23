@@ -4,15 +4,15 @@ module Admin
     before_action :set_profile, only: [:show, :edit, :update]
 
     def index
-      @memberships = @current_company.company_memberships
-                                     .kept
-                                     .includes(:user, :employee_profile)
-                                     .order(created_at: :asc)
+      @filter      = params[:filter] == "all" ? "all" : "active"
+      all_scope    = @current_company.company_memberships.kept.includes(:user, :employee_profile)
+      @memberships = @filter == "all" ? all_scope.order(created_at: :asc)
+                                      : all_scope.where(status: %w[active pending]).order(created_at: :asc)
 
       @stats = {
-        total:       @memberships.count,
-        active:      @memberships.select { |m| m.status == "active" }.count,
-        departments: @memberships.filter_map { |m| m.employee_profile&.department }.uniq.count
+        total:       all_scope.count,
+        active:      all_scope.where(status: "active").count,
+        departments: all_scope.filter_map { |m| m.employee_profile&.department }.uniq.count
       }
     end
 
@@ -35,6 +35,30 @@ module Admin
       existing_balances = LeaveBalance.for_employee_this_year(@profile).includes(:leave_type)
       @leave_balances   = existing_balances.index_by(&:leave_type_id)
       @leave_requests   = @profile.leave_requests.includes(:leave_type).order(requested_at: :desc)
+    end
+
+    def deactivate
+      membership = @profile.company_membership
+      if membership.active?
+        membership.deactivate!
+        redirect_to admin_employee_profiles_path(@current_company.slug),
+                    notice: "#{membership.display_name} has been deactivated. They can no longer sign in."
+      else
+        redirect_to admin_employee_profile_path(@current_company.slug, @profile),
+                    alert: "This employee is not currently active."
+      end
+    end
+
+    def reactivate
+      membership = @profile.company_membership
+      if membership.suspended?
+        membership.reactivate!
+        redirect_to admin_employee_profile_path(@current_company.slug, @profile),
+                    notice: "#{membership.display_name} has been reactivated."
+      else
+        redirect_to admin_employee_profile_path(@current_company.slug, @profile),
+                    alert: "This employee is not currently deactivated."
+      end
     end
 
     def edit

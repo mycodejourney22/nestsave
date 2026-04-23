@@ -27,10 +27,18 @@
   <span class="text-gray-700 font-medium"><%= @display_name %></span>
 </div>
 
+<%# Inactive banner %>
+<% if @membership.suspended? %>
+  <div class="bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex items-center gap-3 mb-6">
+    <svg class="w-4 h-4 text-red-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+    <p class="text-sm text-red-700"><strong>Account deactivated.</strong> This employee cannot sign in. Their data and history are preserved.</p>
+  </div>
+<% end %>
+
 <%# Profile header %>
 <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
   <div class="flex items-start gap-5">
-    <div class="w-16 h-16 rounded-2xl <%= @pending_invite ? "bg-amber-100" : "bg-primary-100" %> flex items-center justify-center flex-shrink-0">
+    <div class="w-16 h-16 rounded-2xl <%= @pending_invite ? "bg-amber-100" : @membership.suspended? ? "bg-red-100" : "bg-primary-100" %> flex items-center justify-center flex-shrink-0">
       <span class="<%= @pending_invite ? "text-amber-600" : "text-primary-600" %> text-xl font-bold">
         <%= @display_initials %>
       </span>
@@ -58,9 +66,24 @@
             </span>
           </div>
         </div>
-        <%= link_to "Edit profile",
-              edit_admin_employee_profile_path(@current_company.slug, @profile),
-              class: "inline-flex items-center gap-1.5 bg-white border border-gray-200 hover:border-gray-300 text-gray-700 px-3.5 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm flex-shrink-0" %>
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <%= link_to "Edit profile",
+                edit_admin_employee_profile_path(@current_company.slug, @profile),
+                class: "inline-flex items-center gap-1.5 bg-white border border-gray-200 hover:border-gray-300 text-gray-700 px-3.5 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm" %>
+          <% if @membership.suspended? %>
+            <%= button_to "Reactivate",
+                  reactivate_admin_employee_profile_path(@current_company.slug, @profile),
+                  method: :patch,
+                  data: { turbo_confirm: "Reactivate #{@display_name}? They will regain access immediately." },
+                  class: "inline-flex items-center bg-amber-50 border border-amber-300 hover:border-amber-400 text-amber-700 px-3.5 py-2 rounded-xl text-sm font-medium transition-colors" %>
+          <% elsif @membership.active? %>
+            <%= button_to "Deactivate",
+                  deactivate_admin_employee_profile_path(@current_company.slug, @profile),
+                  method: :patch,
+                  data: { turbo_confirm: "Are you sure? This will revoke #{@display_name}'s access immediately." },
+                  class: "inline-flex items-center bg-red-50 border border-red-200 hover:border-red-300 text-red-600 px-3.5 py-2 rounded-xl text-sm font-medium transition-colors" %>
+          <% end %>
+        </div>
       </div>
     </div>
   </div>

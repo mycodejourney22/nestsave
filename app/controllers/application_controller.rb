@@ -18,7 +18,16 @@ class ApplicationController < ActionController::Base
 
   def set_current_membership
     @current_membership = current_user.active_membership_for(@current_company)
-    redirect_to root_path, alert: "You are not a member of this company." unless @current_membership
+    unless @current_membership
+      suspended = current_user.company_memberships.kept
+                               .find_by(company: @current_company, status: "suspended")
+      if suspended
+        redirect_to root_path,
+          alert: "Your account has been deactivated. Please contact your HR team."
+      else
+        redirect_to root_path, alert: "You are not a member of this company."
+      end
+    end
   end
 
   def require_employee!

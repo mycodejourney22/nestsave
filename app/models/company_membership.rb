@@ -66,6 +66,14 @@ class CompanyMembership < ApplicationRecord
     !deleted? && pending?
   end
 
+  def deactivate!
+    update!(status: :suspended)
+  end
+
+  def reactivate!
+    update!(status: :active)
+  end
+
   def display_name
     user&.full_name || invited_name || "—"
   end
