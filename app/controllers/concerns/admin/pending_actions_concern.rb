@@ -106,7 +106,7 @@ module Admin
             record:       m,
             name:         m.display_name,
             description:  "Invite pending · No account created yet",
-            sub:          "Invited #{time_ago_in_words(m.invitation_sent_at)} ago",
+            sub:          "Invited #{(((Time.current - m.invitation_sent_at) / 3600).round)} hours ago",
             time:         m.invitation_sent_at,
             approvable:   false,
             action_label: "Resend",
