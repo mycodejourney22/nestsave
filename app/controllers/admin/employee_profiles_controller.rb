@@ -38,17 +38,52 @@ module Admin
     end
 
     def edit
-      @teams = @current_company.teams.active.order(:name)
+      @teams      = @current_company.teams.active.order(:name)
+      @membership = @profile.company_membership
     end
 
     def update
-      @teams = @current_company.teams.active.order(:name)
-      if @profile.update(profile_params)
-        redirect_to admin_employee_profile_path(@current_company.slug, @profile),
-                    notice: "Profile updated."
-      else
-        render :edit, status: :unprocessable_entity
+      @teams      = @current_company.teams.active.order(:name)
+      @membership = @profile.company_membership
+
+      ActiveRecord::Base.transaction do
+        # Full name lives on User
+        if params.dig(:user, :full_name).present?
+          @membership.user&.update!(full_name: params[:user][:full_name].strip)
+        end
+
+        # Role lives on CompanyMembership
+        new_role = params.dig(:company_membership, :role)
+        if new_role.present? && CompanyMembership::ROLES.include?(new_role)
+          @membership.update!(role: new_role)
+        end
+
+        # Salary — only record history if value actually changed
+        new_salary_str = params[:new_salary].to_s.gsub(",", "").strip
+        if new_salary_str.present? && new_salary_str.to_f > 0
+          if new_salary_str.to_f.round(2) != @profile.current_salary.to_f.round(2)
+            result = HR::RecordSalaryChangeService.call(
+              profile:        @profile,
+              new_amount:     new_salary_str,
+              reason:         "Updated by HR admin",
+              effective_date: Date.today,
+              changed_by:     current_user
+            )
+            raise ActiveRecord::RecordInvalid, result.error unless result.success?
+          end
+        end
+
+        @profile.update!(profile_params)
       end
+
+      redirect_to admin_employee_profile_path(@current_company.slug, @profile),
+                  notice: "Employee updated."
+    rescue ActiveRecord::RecordInvalid => e
+      @profile.errors.add(:base, e.message) unless @profile.errors.any?
+      render :edit, status: :unprocessable_entity
+    rescue => e
+      flash.now[:alert] = e.message
+      render :edit, status: :unprocessable_entity
     end
 
     private
