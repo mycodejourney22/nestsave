@@ -36,6 +36,11 @@ class RegistrationsController < ApplicationController
       )
     end
 
+    # Onboarding email sequence
+    OnboardingMailer.employer_welcome(@user).deliver_later
+    OnboardingNudgeJob.set(wait: 2.days).perform_later(@user.id)
+    OnboardingCheckinJob.set(wait: 5.days).perform_later(@user.id)
+
     sign_in(@user)
     redirect_to admin_dashboard_path(@company.slug), notice: "Welcome to NestSave, #{@company.name}!"
   rescue ActiveRecord::RecordInvalid => e

@@ -21,7 +21,7 @@ class PayrollAdminMailer < ApplicationMailer
     @accept_url   = accept_invitation_url(token: membership.invitation_token)
 
     mail to:      membership.invited_email,
-         subject: "[NestSave] #{membership.inviter&.full_name || @company.name} invited you to NestSave at #{@company.name}"
+         subject: "You've been added to #{@company.name} on NestSave"
   end
 
   def savings_plan_submitted(admin, plan)

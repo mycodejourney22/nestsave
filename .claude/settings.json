@@ -27,7 +27,16 @@
       "Bash(bin/rails assets:precompile)",
       "Bash(RAILS_ENV=development bin/rails assets:precompile)",
       "Bash(python3 -c \"import json,sys; m=json.load\\(sys.stdin\\); [print\\(k,v\\) for k,v in m.get\\('assets',{}\\).items\\(\\) if 'payroll' in k]\")",
-      "Bash(python3 -c \"import json,sys; m=json.load\\(sys.stdin\\); print\\(list\\(m.keys\\(\\)\\)\\); print\\(list\\(m.get\\('assets',{}\\).keys\\(\\)\\)[:5]\\)\")"
+      "Bash(python3 -c \"import json,sys; m=json.load\\(sys.stdin\\); print\\(list\\(m.keys\\(\\)\\)\\); print\\(list\\(m.get\\('assets',{}\\).keys\\(\\)\\)[:5]\\)\")",
+      "Bash(python3 -c \"from PIL import Image, ImageDraw, ImageFont; print\\('PIL available'\\)\")",
+      "Bash(python3 -c \"import PIL; print\\(PIL.__version__\\)\")",
+      "Bash(ruby -e \"require 'rmagick'\")",
+      "Bash(ruby -e \"require 'mini_magick'\")",
+      "Bash(convert -background none -density 300 /tmp/nestsave_icon.svg -resize 180x180 /home/az/nestsave/public/apple-touch-icon.png)",
+      "Bash(convert -background none -density 300 /tmp/nestsave_icon.svg -resize 32x32  /home/az/nestsave/public/favicon-32x32.png)",
+      "Bash(convert -background none -density 300 /tmp/nestsave_icon.svg -resize 16x16  /home/az/nestsave/public/favicon-16x16.png)",
+      "Bash(convert -background none -density 300 /tmp/nestsave_icon.svg '\\(' -clone 0 -resize 16x16 '\\)' '\\(' -clone 0 -resize 32x32 '\\)' -delete 0 /home/az/nestsave/public/favicon.ico)",
+      "Bash(identify /home/az/nestsave/public/favicon-32x32.png /home/az/nestsave/public/apple-touch-icon.png)"
     ]
   }
 }

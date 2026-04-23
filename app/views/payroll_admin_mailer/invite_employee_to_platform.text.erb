@@ -1,18 +1,19 @@
 Hi <%= @invited_name.split.first %>,
 
-<%= @membership.inviter&.full_name || @company.name %> has set you up on NestSave — <%= @company.name %>'s HR and payroll savings platform.
+Great news — <%= @company.name %> has added you to NestSave, their HR platform.
 
-YOUR DETAILS
-────────────
-Name:       <%= @invited_name %>
-<% if @profile&.job_title.present? %>Role:       <%= @profile.job_title %><% if @profile.department.present? %> · <%= @profile.department %><% end %>
-<% end %><% if @profile&.current_salary.present? %>Salary:     <%= formatted_currency(@profile.current_salary) %>/month
-<% end %><% if @profile&.employment_type.present? %>Employment: <%= @profile.employment_type_label %>
-<% end %>
-This invitation expires in 48 hours.
+NestSave is where you'll be able to:
 
-Accept your invitation:
+- View your employment details and payslips
+- Request and track your leave
+- See your weekly rota
+- Apply for a salary advance if you ever need one
+- Set up a savings plan directly from your salary
+
+To get started, set up your password here:
 <%= @accept_url %>
 
-If you weren't expecting this invitation, you can safely ignore this email.
-No account will be created without your action.
+This link expires in 48 hours. If it expires, ask your HR manager to resend the invite.
+
+Welcome to the team on NestSave — we hope you find it useful.
+— The NestSave Team
