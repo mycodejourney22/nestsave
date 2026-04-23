@@ -65,7 +65,7 @@ Rails.application.configure do
   config.action_mailer.perform_deliveries     = true
   config.action_mailer.raise_delivery_errors  = true
   config.action_mailer.default_url_options = {
-    host:     Rails.application.credentials.app_host || ENV["APP_HOST"],
+    host:     ENV.fetch("APP_HOST", "nestsave.app"),
     protocol: "https"
   }
   config.action_mailer.smtp_settings = {
@@ -87,11 +87,10 @@ Rails.application.configure do
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
 
-  # Enable DNS rebinding protection and other `Host` header attacks.
-  # config.hosts = [
-  #   "example.com",     # Allow requests from example.com
-  #   /.*\.example\.com/ # Allow requests from subdomains like `www.example.com`
-  # ]
-  # Skip DNS rebinding protection for the default health check endpoint.
-  # config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
+  # Allowed hosts — add more via APP_HOST env var if needed
+  config.hosts << "nestsave.app"
+  config.hosts << "www.nestsave.app"
+  config.hosts << ENV["APP_HOST"] if ENV["APP_HOST"].present?
+  # Allow Render's internal health-check probe
+  config.host_authorization = { exclude: ->(request) { request.path == "/health" } }
 end
