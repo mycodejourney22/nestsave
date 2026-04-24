@@ -37,7 +37,6 @@ module Payroll
     def active_memberships
       @company.company_memberships
               .active
-              .where(role: "employee")
               .includes(:employee_profile, :salary_advances, :savings_plans)
     end
 
