@@ -77,10 +77,12 @@ module Admin
         csv << ["Account Name", "Account Number", "Bank", "Amount"]
         entries.each do |entry|
           bank = entry.employee_profile.bank_details.find { |b| b.active? }
+          # Wrap account number in ="..." so Excel/Sheets preserves leading zeros
+          account_number = bank ? "=\"#{bank.account_number}\"" : "NOT SET"
           csv << [
-            bank&.account_name   || entry.display_name,
-            bank&.account_number || "NOT SET",
-            bank&.bank_name      || "NOT SET",
+            bank&.account_name || entry.display_name,
+            account_number,
+            bank&.bank_name    || "NOT SET",
             entry.net_pay.to_f
           ]
         end
