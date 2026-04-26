@@ -3,7 +3,7 @@ require "csv"
 module Admin
   class PayrollRunsController < ApplicationController
     before_action :require_hr!
-    before_action :set_run, only: [:show, :destroy, :finalise, :reopen, :send_payslips, :export_csv]
+    before_action :set_run, only: [:show, :destroy, :finalise, :reopen, :send_payslips, :export_csv, :export_bank_transfer]
 
     def index
       @runs = @current_company.payroll_runs
@@ -35,7 +35,8 @@ module Admin
 
     def show
       @entries = @run.payroll_entries
-                     .includes(:payroll_items, employee_profile: { company_membership: :user })
+                     .includes(:payroll_items,
+                               employee_profile: [:bank_details, { company_membership: :user }])
                      .order(:created_at)
     end
 
@@ -62,6 +63,34 @@ module Admin
     def send_payslips
       result = Payroll::SendPayslipsService.call(run: @run, admin: current_user)
       redirect_with_result(result, "Payslips sent to all employees.", "Could not send payslips")
+    end
+
+    def export_bank_transfer
+      entries = @run.payroll_entries
+                    .includes(:payroll_items,
+                              employee_profile: [
+                                :bank_details,
+                                { company_membership: :user }
+                              ])
+
+      csv_data = CSV.generate(headers: true) do |csv|
+        csv << ["Account Name", "Account Number", "Sort Code", "Bank", "Amount (Net Pay)"]
+        entries.each do |entry|
+          bank = entry.employee_profile.bank_details.find { |b| b.active? }
+          csv << [
+            bank&.account_name  || entry.display_name,
+            bank&.account_number || "NOT SET",
+            bank&.sort_code      || "NOT SET",
+            bank&.bank_name      || "NOT SET",
+            entry.net_pay.to_f
+          ]
+        end
+      end
+
+      send_data csv_data,
+                filename: "bank_transfer_#{@run.period_label.downcase.gsub(" ", "_")}.csv",
+                type:        "text/csv",
+                disposition: "attachment"
     end
 
     def export_csv

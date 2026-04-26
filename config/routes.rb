@@ -70,6 +70,7 @@ Rails.application.routes.draw do
           patch :reopen
           patch :send_payslips
           get   :export_csv
+          get   :export_bank_transfer
         end
         resources :payroll_entries, only: [:edit, :update] do
           member do

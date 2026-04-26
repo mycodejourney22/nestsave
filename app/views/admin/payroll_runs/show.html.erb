@@ -40,6 +40,9 @@
     <%= link_to "Export CSV",
           export_csv_admin_payroll_run_path(@current_company.slug, @run),
           class: "inline-flex items-center gap-1.5 bg-white border border-gray-200 hover:border-gray-300 text-gray-700 px-3.5 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm" %>
+    <%= link_to "Export for bank transfer",
+          export_bank_transfer_admin_payroll_run_path(@current_company.slug, @run),
+          class: "inline-flex items-center gap-1.5 bg-white border border-gray-200 hover:border-gray-300 text-gray-700 px-3.5 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm" %>
 
     <% if @run.finalised? %>
       <%= button_to "Reopen",
@@ -75,6 +78,15 @@
 <% end %>
 <% if alert.present? %>
   <div class="mb-5 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700"><%= alert %></div>
+<% end %>
+
+<%# Missing bank details warning %>
+<% missing_bank = @entries.select { |e| e.employee_profile.bank_details.none?(&:active?) } %>
+<% if missing_bank.any? %>
+  <div class="mb-5 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
+    <p class="font-semibold mb-0.5"><%= missing_bank.size %> employee(<%= missing_bank.size == 1 ? "" : "s" %>) ha<%= missing_bank.size == 1 ? "s" : "ve" %> no bank details on file</p>
+    <p>Their rows will show "NOT SET" on the bank transfer export. Update their profiles before processing: <span class="font-medium"><%= missing_bank.map(&:display_name).join(", ") %></span></p>
+  </div>
 <% end %>
 
 <%# Summary cards %>
