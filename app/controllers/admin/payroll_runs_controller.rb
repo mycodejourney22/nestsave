@@ -74,13 +74,12 @@ module Admin
                               ])
 
       csv_data = CSV.generate(headers: true) do |csv|
-        csv << ["Account Name", "Account Number", "Sort Code", "Bank", "Amount (Net Pay)"]
+        csv << ["Account Name", "Account Number", "Bank", "Amount"]
         entries.each do |entry|
           bank = entry.employee_profile.bank_details.find { |b| b.active? }
           csv << [
-            bank&.account_name  || entry.display_name,
+            bank&.account_name   || entry.display_name,
             bank&.account_number || "NOT SET",
-            bank&.sort_code      || "NOT SET",
             bank&.bank_name      || "NOT SET",
             entry.net_pay.to_f
           ]
