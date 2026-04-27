@@ -748,15 +748,24 @@
               <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Plan</th>
               <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Monthly</th>
               <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Saved</th>
+              <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden sm:table-cell">Starts</th>
+              <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400 hidden sm:table-cell">Ends</th>
               <th class="text-left px-5 py-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Status</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
             <% @savings_plans.each do |plan| %>
+              <% end_date = plan.start_date ? plan.start_date + plan.duration_months.months : nil %>
               <tr>
                 <td class="px-5 py-3.5 text-sm font-medium text-gray-900"><%= plan.name %></td>
                 <td class="px-5 py-3.5 text-sm text-gray-700"><%= gbp(plan.monthly_amount) %></td>
                 <td class="px-5 py-3.5 text-sm font-semibold text-gray-900"><%= gbp(plan.total_saved) %></td>
+                <td class="px-5 py-3.5 text-sm text-gray-600 hidden sm:table-cell">
+                  <%= plan.start_date ? plan.start_date.strftime("%-d %b %Y") : "—" %>
+                </td>
+                <td class="px-5 py-3.5 text-sm text-gray-600 hidden sm:table-cell">
+                  <%= end_date ? end_date.strftime("%-d %b %Y") : "—" %>
+                </td>
                 <td class="px-5 py-3.5"><%= status_badge(plan.status) %></td>
               </tr>
             <% end %>
