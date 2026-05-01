@@ -191,7 +191,10 @@
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
       <p class="text-xs font-medium text-gray-400 mb-1">Savings deductions</p>
       <p class="text-base font-bold text-gray-900"><%= gbp(@financial[:savings_deductions]) %></p>
-      <p class="text-xs text-gray-400 mt-0.5"><%= @financial[:active_savers] %> active savers</p>
+      <%= link_to admin_savings_plans_path(@current_company.slug),
+            class: "text-xs text-primary-600 hover:text-primary-700 font-medium mt-0.5 inline-block" do %>
+        <%= @financial[:active_savers] %> active savers &rarr;
+      <% end %>
     </div>
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
       <p class="text-xs font-medium text-gray-400 mb-1">Advance repayments</p>

@@ -30,7 +30,7 @@ Rails.application.routes.draw do
     namespace :admin do
       get "dashboard", to: "dashboard#show", as: :dashboard
 
-      resources :savings_plans, only: [] do
+      resources :savings_plans, only: [:index] do
         member do
           get  :approve_form
           get  :decline_form

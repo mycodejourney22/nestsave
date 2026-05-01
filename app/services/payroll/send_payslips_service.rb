@@ -34,9 +34,12 @@ module Payroll
           status:           :payslips_sent,
           payslips_sent_at: Time.current
         )
-
-        # Month-end processing (advance repayments, savings) handled separately
       end
+
+      Payroll::MonthEndProcessor.call(
+        company: @run.company,
+        period:  Date.new(@run.year, @run.month, 1)
+      )
 
       Result.success(@run)
     rescue => e

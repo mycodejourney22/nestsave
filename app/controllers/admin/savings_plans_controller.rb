@@ -3,8 +3,17 @@ module Admin
     include Admin::PendingActionsConcern
 
     before_action :require_hr!
-    before_action :set_plan
+    before_action :set_plan, except: [:index]
     layout false, only: [:approve_form, :decline_form]
+
+    def index
+      membership_ids = @current_company.company_memberships.active.pluck(:id)
+      @plans = SavingsPlan
+        .where(company_membership_id: membership_ids)
+        .where(status: params[:status].presence || "active")
+        .includes(company_membership: [:employee_profile, :user])
+        .order(created_at: :desc)
+    end
 
     def approve_form; end
     def decline_form; end

@@ -1,12 +1,12 @@
 module Payroll
   class MonthEndProcessor
-    def self.call(company:)
-      new(company).call
+    def self.call(company:, period: nil)
+      new(company, period).call
     end
 
-    def initialize(company)
+    def initialize(company, period = nil)
       @company = company
-      @period  = Date.current.beginning_of_month
+      @period  = period || Date.current.beginning_of_month
       @errors  = []
     end
 
