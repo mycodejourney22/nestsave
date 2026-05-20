@@ -66,7 +66,7 @@ module Payroll
         .due_this_month
         .pending
         .joins(salary_advance: :company_membership)
-        .where(salary_advances: { status: %w[disbursed repaying] })
+        .where(salary_advances: { status: %w[approved disbursed repaying] })
         .where(company_memberships: { company_id: @company.id })
 
       due_schedules.each do |schedule|
@@ -86,7 +86,8 @@ module Payroll
           period_month:       @period
         )
 
-        advance.update!(status: :repaying) if advance.disbursed?
+        advance.update!(status: :disbursed) if advance.approved?
+        advance.update!(status: :repaying)  if advance.disbursed?
 
         if advance.fully_repaid?
           advance.update!(status: :settled)

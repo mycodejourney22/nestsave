@@ -105,7 +105,7 @@ module Payroll
         .joins(:salary_advance)
         .where(salary_advances: {
           company_membership_id: membership.id,
-          status:                %w[disbursed repaying]
+          status:                %w[approved disbursed repaying]
         })
         .each do |schedule|
           entry.payroll_items.create!(
