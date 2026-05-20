@@ -20,6 +20,18 @@ class EmployeeMailer < ApplicationMailer
          subject: "[NestSave] Update on your savings plan \"#{plan.name}\""
   end
 
+  def savings_plan_cancelled(user, plan, note)
+    @user        = user
+    @plan        = plan
+    @note        = note
+    @company     = plan.company_membership.company
+    @new_url     = new_employee_savings_plan_url(company_slug: @company.slug)
+    @refund_amount = plan.total_saved
+
+    mail to:      user.email,
+         subject: "[NestSave] Your savings plan \"#{plan.name}\" has been cancelled"
+  end
+
   def monthly_savings_confirmed(user, plan)
     @user     = user
     @plan     = plan

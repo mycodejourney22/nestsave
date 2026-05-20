@@ -1,0 +1,13 @@
+YOUR SAVINGS PLAN HAS BEEN CANCELLED
+
+Hi <%= @user.full_name.split.first %>,
+
+Your savings plan "<%= @plan.name %>" has been cancelled by your payroll manager.
+A refund of <%= formatted_currency(@refund_amount) %> will be processed manually — please contact HR if you have not received it.
+<% if @note.present? %>
+Note from your payroll manager:
+"<%= @note %>"
+<% end %>
+
+If you'd like to start saving again, you can submit a new plan at any time:
+<%= @new_url %>

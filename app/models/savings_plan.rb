@@ -5,14 +5,15 @@ class SavingsPlan < ApplicationRecord
   has_many :withdrawal_requests, dependent: :destroy
   has_many :transactions, as: :reference, dependent: :nullify
 
-  STATUSES = %w[pending active matured closed declined].freeze
+  STATUSES = %w[pending active matured closed declined cancelled].freeze
 
   enum :status, {
-    pending:  "pending",
-    active:   "active",
-    matured:  "matured",
-    closed:   "closed",
-    declined: "declined"
+    pending:   "pending",
+    active:    "active",
+    matured:   "matured",
+    closed:    "closed",
+    declined:  "declined",
+    cancelled: "cancelled"
   }
 
   validates :name,            presence: true

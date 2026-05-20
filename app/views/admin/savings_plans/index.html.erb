@@ -10,7 +10,7 @@
 <%# Status filter tabs %>
 <div class="border-b border-gray-200 mb-6">
   <nav class="flex gap-0 -mb-px">
-    <% [["active", "Active"], ["pending", "Pending"], ["matured", "Matured"], ["closed", "Closed"]].each do |key, label| %>
+    <% [["active", "Active"], ["pending", "Pending"], ["matured", "Matured"], ["closed", "Closed"], ["cancelled", "Cancelled"]].each do |key, label| %>
       <% active = (params[:status].presence || "active") == key %>
       <%= link_to admin_savings_plans_path(@current_company.slug, status: key),
             class: "whitespace-nowrap px-4 py-3 text-sm font-medium border-b-2 transition-colors #{active ? "border-primary-500 text-primary-600" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"}" do %>
@@ -63,7 +63,12 @@
             <td class="px-5 py-4 text-sm text-gray-700"><%= plan.name %></td>
             <td class="px-5 py-4 text-sm text-gray-700 text-right"><%= gbp(plan.monthly_amount) %></td>
             <td class="px-5 py-4 text-right">
-              <span class="text-sm font-semibold text-gray-900"><%= gbp(plan.total_saved) %></span>
+              <% if plan.cancelled? && plan.total_saved > 0 %>
+                <span class="text-sm font-semibold text-amber-700"><%= gbp(plan.total_saved) %></span>
+                <span class="block text-xs text-amber-600">refund due</span>
+              <% else %>
+                <span class="text-sm font-semibold text-gray-900"><%= gbp(plan.total_saved) %></span>
+              <% end %>
             </td>
             <td class="px-5 py-4 text-sm text-gray-500 text-right hidden sm:table-cell"><%= gbp(plan.target_amount) %></td>
             <td class="px-5 py-4 text-sm text-gray-600 hidden md:table-cell">
@@ -74,9 +79,17 @@
             </td>
             <td class="px-5 py-4"><%= status_badge(plan.status) %></td>
             <td class="px-5 py-4 text-right">
-              <%= link_to "View profile",
-                    admin_employee_profile_path(@current_company.slug, profile, tab: "savings_advances"),
-                    class: "text-xs font-medium text-primary-600 hover:text-primary-700" %>
+              <div class="flex items-center justify-end gap-3">
+                <% if plan.active? %>
+                  <%= link_to "Cancel plan",
+                        cancel_form_admin_savings_plan_path(@current_company.slug, plan),
+                        data: { turbo_frame: "modal" },
+                        class: "text-xs font-medium text-amber-600 hover:text-amber-700" %>
+                <% end %>
+                <%= link_to "View profile",
+                      admin_employee_profile_path(@current_company.slug, profile, tab: "savings_advances"),
+                      class: "text-xs font-medium text-primary-600 hover:text-primary-700" %>
+              </div>
             </td>
           </tr>
         <% end %>

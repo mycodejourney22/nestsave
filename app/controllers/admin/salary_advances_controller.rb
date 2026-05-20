@@ -3,8 +3,17 @@ module Admin
     include Admin::PendingActionsConcern
 
     before_action :require_hr!
-    before_action :set_advance
+    before_action :set_advance, except: [:index]
     layout false, only: [:approve_form, :decline_form, :disburse_form]
+
+    def index
+      membership_ids = @current_company.company_memberships.active.pluck(:id)
+      @advances = SalaryAdvance
+        .where(company_membership_id: membership_ids)
+        .where(status: params[:status].presence || "pending")
+        .includes(company_membership: [:employee_profile, :user])
+        .order(created_at: :desc)
+    end
 
     def show; end
     def approve_form; end

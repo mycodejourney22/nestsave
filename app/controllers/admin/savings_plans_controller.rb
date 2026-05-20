@@ -4,7 +4,7 @@ module Admin
 
     before_action :require_hr!
     before_action :set_plan, except: [:index]
-    layout false, only: [:approve_form, :decline_form]
+    layout false, only: [:approve_form, :decline_form, :cancel_form]
 
     def index
       membership_ids = @current_company.company_memberships.active.pluck(:id)
@@ -17,6 +17,7 @@ module Admin
 
     def approve_form; end
     def decline_form; end
+    def cancel_form;  end
 
     def approve
       result = SavingsPlans::ApproveService.call(
@@ -36,6 +37,16 @@ module Admin
         note:     params[:note]
       )
       respond_with_result(result, "Plan declined.", "Could not decline plan")
+    end
+
+    def cancel
+      refund = @plan.total_saved
+      result = SavingsPlans::CancelService.call(
+        plan:  @plan,
+        admin: current_user,
+        note:  params[:note]
+      )
+      respond_with_result(result, "Plan cancelled. Please process the refund of #{helpers.gbp(refund)} manually.", "Could not cancel plan")
     end
 
     private

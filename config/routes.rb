@@ -32,10 +32,12 @@ Rails.application.routes.draw do
 
       resources :savings_plans, only: [:index] do
         member do
-          get  :approve_form
-          get  :decline_form
+          get   :approve_form
+          get   :decline_form
+          get   :cancel_form
           patch :approve
           patch :decline
+          patch :cancel
         end
       end
 
@@ -48,7 +50,7 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :salary_advances, only: [:show] do
+      resources :salary_advances, only: [:index, :show] do
         member do
           get  :approve_form
           get  :decline_form
