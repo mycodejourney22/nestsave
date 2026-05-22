@@ -1,0 +1,166 @@
+<%# Admin — Edit Salary Advance %>
+
+<div class="flex items-center gap-2 text-sm text-gray-400 mb-6">
+  <%= link_to "Salary Advances", admin_salary_advances_path(@current_company.slug),
+        class: "hover:text-gray-600 transition-colors" %>
+  <span>/</span>
+  <%= link_to "#{gbp(@advance.amount)} advance",
+        admin_salary_advance_path(@current_company.slug, @advance),
+        class: "hover:text-gray-600 transition-colors" %>
+  <span>/</span>
+  <span class="text-gray-700 font-medium">Amend</span>
+</div>
+
+<div class="flex items-start justify-between gap-4 mb-6">
+  <div>
+    <h1 class="text-2xl font-semibold text-gray-900">Amend Salary Advance</h1>
+    <p class="text-sm text-gray-400 mt-0.5">
+      <%= @advance.user.full_name %> &middot; <%= status_badge(@advance.status) %>
+    </p>
+  </div>
+</div>
+
+<% if @advance.approved? %>
+  <div class="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 mb-6">
+    <p class="text-sm text-amber-800">
+      This advance is already approved. Saving changes will <strong>delete and regenerate</strong> the repayment schedule based on the new figures.
+    </p>
+  </div>
+<% end %>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+  <%# Edit form %>
+  <div class="lg:col-span-2">
+    <%= form_with model: @advance,
+          url: admin_salary_advance_path(@current_company.slug, @advance),
+          method: :patch,
+          data: { controller: "advance-amend" } do |f| %>
+
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 space-y-5">
+
+        <div>
+          <%= f.label :amount, "Advance amount", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-3 flex items-center text-sm text-gray-400 pointer-events-none">
+              <%= @current_company.currency_symbol %>
+            </span>
+            <%= f.number_field :amount,
+                  value: @advance.amount,
+                  step: "0.01", min: "1",
+                  required: true,
+                  data: { "advance-amend-target": "amount", action: "input->advance-amend#recalculate" },
+                  class: "block w-full rounded-lg border border-gray-300 pl-7 pr-3 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition" %>
+          </div>
+          <p class="text-xs text-gray-400 mt-1">
+            Salary: <%= gbp(@advance.company_membership.current_salary || 0) %> — advance cannot exceed monthly salary
+          </p>
+        </div>
+
+        <div>
+          <%= f.label :repayment_months, "Repayment duration (months)", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <%= f.select :repayment_months,
+                options_for_select((1..6).map { |n| ["#{n} month#{n > 1 ? "s" : ""}", n] }, @advance.repayment_months),
+                {},
+                required: true,
+                data: { "advance-amend-target": "months", action: "change->advance-amend#recalculate" },
+                class: "block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition bg-white" %>
+        </div>
+
+        <%# Live monthly instalment preview %>
+        <div class="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 flex items-center justify-between"
+             data-advance-amend-target="preview">
+          <span class="text-sm text-gray-600">New monthly repayment</span>
+          <span class="text-lg font-bold text-gray-900"
+                data-advance-amend-target="instalmentDisplay">
+            <%= gbp(@advance.monthly_instalment) %>
+          </span>
+        </div>
+
+        <div>
+          <%= f.label :note, "Reason for amendment", class: "block text-sm font-medium text-gray-700 mb-1.5" %>
+          <%= f.text_area :note,
+                value: nil,
+                rows: 3,
+                placeholder: "Briefly explain why this advance is being amended...",
+                class: "block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 transition resize-none" %>
+        </div>
+
+        <div class="flex items-center gap-3 pt-2">
+          <%= f.submit "Save changes",
+                class: "bg-primary-600 hover:bg-primary-700 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors cursor-pointer" %>
+          <%= link_to "Cancel",
+                admin_salary_advance_path(@current_company.slug, @advance),
+                class: "px-4 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors" %>
+        </div>
+
+      </div>
+    <% end %>
+  </div>
+
+  <%# Sidebar — current details %>
+  <div class="space-y-4">
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+      <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">Current figures</p>
+      <dl class="space-y-2.5">
+        <div class="flex justify-between text-sm">
+          <dt class="text-gray-500">Amount</dt>
+          <dd class="font-semibold text-gray-900"><%= gbp(@advance.amount) %></dd>
+        </div>
+        <div class="flex justify-between text-sm">
+          <dt class="text-gray-500">Duration</dt>
+          <dd class="font-semibold text-gray-900"><%= @advance.repayment_months %> months</dd>
+        </div>
+        <div class="flex justify-between text-sm border-t border-gray-100 pt-2.5">
+          <dt class="text-gray-500">Monthly repayment</dt>
+          <dd class="font-semibold text-gray-900"><%= gbp(@advance.monthly_instalment) %></dd>
+        </div>
+      </dl>
+    </div>
+
+    <% if @advance.advance_repayment_schedules.any? %>
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="px-4 py-3 border-b border-gray-100">
+          <p class="text-xs font-semibold uppercase tracking-wider text-gray-400">Current schedule</p>
+          <p class="text-xs text-amber-600 mt-0.5">Will be replaced on save</p>
+        </div>
+        <table class="min-w-full text-sm">
+          <tbody class="divide-y divide-gray-100">
+            <% @advance.advance_repayment_schedules.order(:instalment_number).each do |s| %>
+              <tr class="<%= s.paid? ? "bg-gray-50/50 text-gray-400" : "" %>">
+                <td class="px-4 py-2.5 font-medium"><%= s.instalment_number %></td>
+                <td class="px-4 py-2.5 text-gray-600"><%= s.due_date.strftime("%-d %b %Y") %></td>
+                <td class="px-4 py-2.5 font-semibold text-right text-gray-900"><%= gbp(s.amount) %></td>
+                <td class="px-4 py-2.5"><%= status_badge(s.status) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  </div>
+
+</div>
+
+<script>
+  // Minimal inline controller — recalculates monthly instalment preview without a full Stimulus file
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.querySelector("[data-controller='advance-amend']");
+    if (!form) return;
+
+    const amountInput  = form.querySelector("[data-advance-amend-target='amount']");
+    const monthsSelect = form.querySelector("[data-advance-amend-target='months']");
+    const display      = form.querySelector("[data-advance-amend-target='instalmentDisplay']");
+    const symbol       = "<%= @current_company.currency_symbol %>";
+
+    function recalculate() {
+      const amount = parseFloat(amountInput.value) || 0;
+      const months = parseInt(monthsSelect.value)  || 1;
+      const inst   = months > 0 ? (amount / months) : 0;
+      display.textContent = symbol + inst.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    amountInput.addEventListener("input",  recalculate);
+    monthsSelect.addEventListener("change", recalculate);
+  });
+</script>

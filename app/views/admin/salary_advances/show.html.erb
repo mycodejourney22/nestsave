@@ -22,8 +22,13 @@
     </p>
   </div>
 
-  <% if @advance.pending? %>
-    <div class="flex items-center gap-2 flex-shrink-0">
+  <div class="flex items-center gap-2 flex-shrink-0">
+    <% if @advance.pending? || @advance.approved? %>
+      <%= link_to "Amend",
+            edit_admin_salary_advance_path(@current_company.slug, @advance),
+            class: "inline-flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-semibold transition-colors" %>
+    <% end %>
+    <% if @advance.pending? %>
       <%= link_to "Approve",
             approve_form_admin_salary_advance_path(@current_company.slug, @advance),
             data: { turbo_frame: "modal" },
@@ -32,15 +37,13 @@
             decline_form_admin_salary_advance_path(@current_company.slug, @advance),
             data: { turbo_frame: "modal" },
             class: "inline-flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-700 px-4 py-2 rounded-xl text-sm font-semibold transition-colors" %>
-    </div>
-  <% elsif @advance.approved? %>
-    <div class="flex-shrink-0">
+    <% elsif @advance.approved? %>
       <%= link_to "Mark as Disbursed",
             disburse_form_admin_salary_advance_path(@current_company.slug, @advance),
             data: { turbo_frame: "modal" },
             class: "inline-flex items-center gap-1.5 bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors" %>
-    </div>
-  <% end %>
+    <% end %>
+  </div>
 </div>
 
 <%# Stats row %>
@@ -78,7 +81,7 @@
     </div>
     <div class="ml-auto text-right">
       <p class="text-xs text-gray-400">Monthly salary</p>
-      <p class="text-sm font-semibold text-gray-900"><%= gbp(@advance.company_membership.salary) %></p>
+      <p class="text-sm font-semibold text-gray-900"><%= gbp(@advance.company_membership.current_salary || 0) %></p>
     </div>
   </div>
 </div>

@@ -50,7 +50,7 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :salary_advances, only: [:index, :show] do
+      resources :salary_advances, only: [:index, :show, :edit, :update] do
         member do
           get  :approve_form
           get  :decline_form

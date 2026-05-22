@@ -20,6 +20,31 @@ module Admin
     def decline_form; end
     def disburse_form; end
 
+    def edit
+      unless @advance.pending? || @advance.approved?
+        redirect_to admin_salary_advance_path(@current_company.slug, @advance),
+                    alert: "Only pending or approved advances can be amended."
+      end
+    end
+
+    def update
+      result = SalaryAdvances::AmendService.call(
+        advance:          @advance,
+        admin:            current_user,
+        amount:           advance_params[:amount],
+        repayment_months: advance_params[:repayment_months],
+        note:             advance_params[:note]
+      )
+
+      if result.success?
+        redirect_to admin_salary_advance_path(@current_company.slug, @advance),
+                    notice: "Advance updated successfully."
+      else
+        flash.now[:alert] = result.error
+        render :edit, status: :unprocessable_entity
+      end
+    end
+
     def approve
       result = SalaryAdvances::ReviewService.call(
         advance:  @advance,
@@ -46,6 +71,10 @@ module Admin
     end
 
     private
+
+    def advance_params
+      params.require(:salary_advance).permit(:amount, :repayment_months, :note)
+    end
 
     def set_advance
       @advance = SalaryAdvance
