@@ -53,7 +53,7 @@
       <%= button_to "Send payslips",
             send_payslips_admin_payroll_run_path(@current_company.slug, @run),
             method: :patch,
-            data: { turbo_confirm: "Send payslips to all #{@entries.size} employees? This cannot be undone." },
+            data: { turbo_confirm: "Send payslips to all #{@all_entries.size} employees? This cannot be undone." },
             class: "inline-flex items-center bg-primary-500 hover:bg-primary-600 text-white px-3.5 py-2 rounded-xl text-sm font-semibold transition-colors" %>
     <% elsif @run.draft? || @run.in_review? %>
       <% any_zero_net = @entries.any? { |e| e.net_pay <= 0 } %>
@@ -81,7 +81,7 @@
 <% end %>
 
 <%# Missing bank details warning %>
-<% missing_bank = @entries.select { |e| e.employee_profile.bank_details.none?(&:active?) } %>
+<% missing_bank = @all_entries.select { |e| e.employee_profile.bank_details.none?(&:active?) } %>
 <% if missing_bank.any? %>
   <div class="mb-5 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800">
     <p class="font-semibold mb-0.5"><%= missing_bank.size %> employee(<%= missing_bank.size == 1 ? "" : "s" %>) ha<%= missing_bank.size == 1 ? "s" : "ve" %> no bank details on file</p>
@@ -90,23 +90,54 @@
 <% end %>
 
 <%# Summary cards %>
+<%
+  display_gross       = @entries.sum(&:total_earnings)
+  display_deductions  = @entries.sum(&:total_deductions)
+  display_net         = @entries.sum(&:net_pay)
+  display_base        = @entries.sum(&:base_salary)
+%>
 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-7">
   <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
     <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Total gross</p>
-    <p class="text-2xl font-bold text-gray-900"><%= gbp(@run.total_gross) %></p>
-    <p class="text-xs text-gray-400 mt-1"><%= @entries.size %> employees</p>
+    <p class="text-2xl font-bold text-gray-900"><%= gbp(display_gross) %></p>
+    <p class="text-xs text-gray-400 mt-1"><%= @entries.size %> employee<%= @entries.size == 1 ? "" : "s" %></p>
   </div>
   <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
     <p class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Total deductions</p>
-    <p class="text-2xl font-bold text-red-600"><%= gbp(@run.total_deductions) %></p>
+    <p class="text-2xl font-bold text-red-600"><%= gbp(display_deductions) %></p>
     <p class="text-xs text-gray-400 mt-1">PAYE, pension, savings, advances</p>
   </div>
   <div class="bg-gradient-to-br from-[#0f1a14] to-[#1D9E75]/80 rounded-xl p-5 text-white">
     <p class="text-xs font-semibold uppercase tracking-wider text-white/60 mb-1">Total net pay</p>
-    <p class="text-2xl font-bold text-white"><%= gbp(@run.total_net) %></p>
+    <p class="text-2xl font-bold text-white"><%= gbp(display_net) %></p>
     <p class="text-xs text-white/50 mt-1">to be paid to employees</p>
   </div>
 </div>
+
+<%# Team filter tabs — only shown when there are multiple groups %>
+<% show_team_filter = @run_teams.size > 1 || (@run_teams.size == 1 && @has_company_wide) %>
+<% if show_team_filter %>
+  <div class="flex items-center gap-2 flex-wrap mb-4">
+    <%
+      tab_base   = "inline-flex items-center px-3.5 py-1.5 rounded-full text-sm font-medium transition-colors border"
+      tab_active = "bg-primary-500 border-primary-500 text-white"
+      tab_idle   = "bg-white border-gray-200 text-gray-600 hover:border-gray-300 hover:text-gray-900"
+    %>
+    <%= link_to "All",
+          admin_payroll_run_path(@current_company.slug, @run),
+          class: "#{tab_base} #{@selected_team_id.blank? ? tab_active : tab_idle}" %>
+    <% @run_teams.each do |team| %>
+      <%= link_to team.name,
+            admin_payroll_run_path(@current_company.slug, @run, team_id: team.id),
+            class: "#{tab_base} #{@selected_team_id == team.id.to_s ? tab_active : tab_idle}" %>
+    <% end %>
+    <% if @has_company_wide %>
+      <%= link_to "Company-wide",
+            admin_payroll_run_path(@current_company.slug, @run, team_id: "company_wide"),
+            class: "#{tab_base} #{@selected_team_id == 'company_wide' ? tab_active : tab_idle}" %>
+    <% end %>
+  </div>
+<% end %>
 
 <%# Payroll table %>
 <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto mb-8">
@@ -173,19 +204,19 @@
         </tr>
       <% end %>
 
-      <%# Totals row — use run-level aggregates to stay consistent with summary cards %>
+      <%# Totals row %>
       <tr class="bg-gray-50/80 border-t-2 border-gray-200">
         <td class="px-5 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider">Total</td>
         <td class="hidden lg:table-cell"></td>
         <td class="px-5 py-3.5 text-sm font-bold text-gray-900 text-right hidden sm:table-cell">
-          <%= gbp(@run.total_gross) %>
+          <%= gbp(display_base) %>
         </td>
         <td class="px-5 py-3.5 text-sm font-bold text-emerald-700 text-right hidden sm:table-cell">—</td>
         <td class="px-5 py-3.5 text-sm font-bold text-red-600 text-right hidden sm:table-cell">
-          <%= gbp(@run.total_deductions) %>
+          <%= gbp(display_deductions) %>
         </td>
         <td class="px-5 py-3.5 text-sm font-bold text-gray-900 text-right">
-          <%= gbp(@run.total_net) %>
+          <%= gbp(display_net) %>
         </td>
         <td></td>
       </tr>

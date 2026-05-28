@@ -34,10 +34,25 @@ module Admin
     end
 
     def show
-      @entries = @run.payroll_entries
-                     .includes(:payroll_items,
-                               employee_profile: [:bank_details, { company_membership: :user }])
-                     .order(:created_at)
+      @all_entries = @run.payroll_entries
+                         .includes(:payroll_items,
+                                   employee_profile: [:bank_details, :team, { company_membership: :user }])
+                         .order(:created_at)
+                         .to_a
+
+      @run_teams = @current_company.teams
+                                   .where(id: @all_entries.map { |e| e.employee_profile.team_id }.compact.uniq)
+                                   .order(:name)
+      @has_company_wide = @all_entries.any? { |e| e.employee_profile.team_id.nil? }
+
+      @selected_team_id = params[:team_id]
+      @entries = if @selected_team_id == "company_wide"
+                   @all_entries.select { |e| e.employee_profile.team_id.nil? }
+                 elsif @selected_team_id.present?
+                   @all_entries.select { |e| e.employee_profile.team_id.to_s == @selected_team_id }
+                 else
+                   @all_entries
+                 end
     end
 
     def destroy
