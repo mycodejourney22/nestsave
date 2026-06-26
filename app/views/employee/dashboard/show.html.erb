@@ -82,6 +82,53 @@
   <% end %>
 </div>
 
+<%# ── Team requests (studio managers only) ──────────────────────── %>
+<% if @current_membership.team_manager? %>
+  <div class="mb-7">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-base font-semibold text-gray-900">
+        Team requests
+        <% if @team_pending_leave_requests.any? %>
+          <span class="ml-1.5 inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-100 text-amber-700 text-xs font-bold"><%= @team_pending_leave_requests.size %></span>
+        <% end %>
+      </h2>
+      <%= link_to "View all",
+            manager_leave_requests_path(@current_company.slug),
+            class: "text-xs font-medium text-primary-600 hover:text-primary-700" %>
+    </div>
+
+    <% if @team_pending_leave_requests.empty? %>
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm px-5 py-6 text-center">
+        <p class="text-sm text-gray-400">No pending leave requests from your team</p>
+      </div>
+    <% else %>
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm divide-y divide-gray-100 overflow-hidden">
+        <% @team_pending_leave_requests.each do |req| %>
+          <div class="flex items-center justify-between gap-3 px-5 py-3.5 hover:bg-gray-50/60 transition-colors">
+            <div class="min-w-0">
+              <p class="text-sm font-semibold text-gray-900 truncate"><%= req.employee_profile.full_name %></p>
+              <p class="text-xs text-gray-400 mt-0.5">
+                <%= req.leave_type.name %> · <%= req.start_date.strftime("%-d %b") %> – <%= req.end_date.strftime("%-d %b %Y") %>
+              </p>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <%= button_to "Approve",
+                    approve_manager_leave_request_path(@current_company.slug, req),
+                    method: :patch,
+                    class: "text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-colors" %>
+              <%= button_to "Decline",
+                    decline_manager_leave_request_path(@current_company.slug, req),
+                    method: :patch,
+                    data: { turbo_confirm: "Decline this leave request?" },
+                    class: "text-xs font-semibold px-3 py-1.5 rounded-lg bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors" %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% end %>
+
 <%# ── This week's rota (only if team + published rota exist) ──── %>
 <% if @current_rota %>
   <div class="mb-7">

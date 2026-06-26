@@ -114,6 +114,15 @@ Rails.application.routes.draw do
         resources :employee_references,  only: [:index, :new, :create, :edit, :update]
       end
     end
+
+    namespace :manager do
+      resources :leave_requests, only: [:index] do
+        member do
+          patch :approve
+          patch :decline
+        end
+      end
+    end
   end
 
   get   "/invitations/:token/accept", to: "invitations#show",   as: :accept_invitation

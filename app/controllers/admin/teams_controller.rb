@@ -15,24 +15,31 @@ module Admin
     end
 
     def new
-      @team = Team.new
+      @team  = Team.new
+      @staff = @current_company.company_memberships.active.includes(:user).order("users.full_name")
     end
 
     def create
       @team = @current_company.teams.build(team_params)
       if @team.save
+        assign_manager(@team, params[:team][:manager_membership_id])
         redirect_to admin_teams_path(@current_company.slug), notice: "Team created."
       else
+        @staff = @current_company.company_memberships.active.includes(:user).order("users.full_name")
         render :new, status: :unprocessable_entity
       end
     end
 
-    def edit; end
+    def edit
+      @staff = @current_company.company_memberships.active.includes(:user).order("users.full_name")
+    end
 
     def update
       if @team.update(team_params)
+        assign_manager(@team, params[:team][:manager_membership_id])
         redirect_to admin_teams_path(@current_company.slug), notice: "Team updated."
       else
+        @staff = @current_company.company_memberships.active.includes(:user).order("users.full_name")
         render :edit, status: :unprocessable_entity
       end
     end
@@ -55,6 +62,18 @@ module Admin
 
     def team_params
       params.require(:team).permit(:name, :description, :active)
+    end
+
+    def assign_manager(team, membership_id)
+      existing = @current_company.company_memberships.active.team_manager.find_by(team_id: team.id)
+      if existing && existing.id != membership_id
+        existing.update!(team_id: nil, role: :employee)
+      end
+
+      return if membership_id.blank?
+
+      membership = @current_company.company_memberships.active.find(membership_id)
+      membership.update!(team_id: team.id, role: :team_manager)
     end
   end
 end

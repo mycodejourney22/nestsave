@@ -12,7 +12,7 @@ module Leave
     end
 
     def call
-      return Result.failure("Not pending") unless @request.pending?
+      return Result.failure("Not pending") unless @request.pending? || @request.manager_approved?
       ActiveRecord::Base.transaction do
         if @approved
           @request.update!(

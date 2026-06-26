@@ -1,9 +1,9 @@
-<%# Admin — Leave Requests %>
+<%# Manager — Leave Requests %>
 
 <div class="flex items-center justify-between mb-7">
   <div>
     <h1 class="text-2xl font-semibold text-gray-900">Leave Requests</h1>
-    <p class="text-gray-500 text-sm mt-1">Review and manage employee leave</p>
+    <p class="text-gray-500 text-sm mt-1">Review leave requests for your team</p>
   </div>
 </div>
 
@@ -27,7 +27,7 @@
     <% if @pending_requests.empty? %>
       <div class="flex flex-col items-center justify-center py-14 text-center px-8">
         <p class="text-sm font-medium text-gray-700">No pending requests</p>
-        <p class="text-xs text-gray-400 mt-1">New requests will appear here</p>
+        <p class="text-xs text-gray-400 mt-1">New requests from your team will appear here</p>
       </div>
     <% else %>
       <table class="min-w-full">
@@ -46,14 +46,6 @@
             <tr class="hover:bg-gray-50/60 transition-colors">
               <td class="px-5 py-4">
                 <p class="text-sm font-medium text-gray-900"><%= req.employee_profile.full_name %></p>
-                <% if req.employee_profile.team.present? %>
-                  <p class="text-xs text-gray-400 mt-0.5"><%= req.employee_profile.team.name %></p>
-                <% end %>
-                <% if req.manager_approved? %>
-                  <span class="inline-flex items-center rounded-full px-2 py-0.5 mt-1 text-xs font-medium bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-600/20">
-                    Awaiting HR — manager approved
-                  </span>
-                <% end %>
               </td>
               <td class="px-5 py-4 hidden sm:table-cell">
                 <% cat_colors = { "annual" => "bg-blue-50 text-blue-700 ring-blue-600/20", "sick" => "bg-amber-50 text-amber-700 ring-amber-600/20", "maternity" => "bg-pink-50 text-pink-700 ring-pink-600/20", "other" => "bg-gray-100 text-gray-600 ring-gray-500/20" } %>
@@ -73,11 +65,11 @@
               <td class="px-5 py-4 text-right">
                 <div class="flex items-center justify-end gap-2">
                   <%= button_to "Approve",
-                        approve_admin_leave_request_path(@current_company.slug, req),
+                        approve_manager_leave_request_path(@current_company.slug, req),
                         method: :patch,
                         class: "text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-colors" %>
                   <%= button_to "Decline",
-                        decline_admin_leave_request_path(@current_company.slug, req),
+                        decline_manager_leave_request_path(@current_company.slug, req),
                         method: :patch,
                         data: { turbo_confirm: "Decline this leave request?" },
                         class: "text-xs font-semibold px-3 py-1.5 rounded-lg bg-white border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors" %>
@@ -125,9 +117,10 @@
                 <%= req.total_days %> day<%= req.total_days == 1 ? "" : "s" %>
               </td>
               <td class="px-5 py-4">
-                <% status_colors = { "approved" => "bg-emerald-50 text-emerald-700 ring-emerald-600/20", "declined" => "bg-red-50 text-red-700 ring-red-600/20", "cancelled" => "bg-gray-100 text-gray-500 ring-gray-500/20" } %>
+                <% status_colors = { "manager_approved" => "bg-amber-50 text-amber-700 ring-amber-600/20", "declined" => "bg-red-50 text-red-700 ring-red-600/20" } %>
+                <% status_labels = { "manager_approved" => "Sent to HR" } %>
                 <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset <%= status_colors.fetch(req.status, "bg-gray-100 text-gray-500 ring-gray-500/20") %>">
-                  <%= req.status.capitalize %>
+                  <%= status_labels.fetch(req.status, req.status.capitalize) %>
                 </span>
               </td>
             </tr>

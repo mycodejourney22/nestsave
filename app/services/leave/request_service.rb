@@ -44,7 +44,7 @@ module Leave
     end
 
     def accrued_so_far
-      return 0 unless @leave_type.accrues_monthly?
+      return @leave_type.default_days unless @leave_type.accrues_monthly?
       months_worked = [
         (Date.current.year * 12 + Date.current.month) -
         (@profile.employment_start_date.year * 12 + @profile.employment_start_date.month),
@@ -54,17 +54,19 @@ module Leave
     end
 
     def notify_reviewers(request)
-      reviewers = @profile.company.company_memberships
-                    .active
-                    .where(role: %w[hr_admin super_admin])
-                    .includes(:user)
-
-      if @profile.team
-        team_managers = @profile.company.company_memberships
+      studio_manager = @profile.team && @profile.company.company_memberships
                           .active
-                          .where(role: "team_manager", team_id: @profile.team_id)
+                          .team_manager
                           .includes(:user)
-        reviewers = reviewers.or(team_managers)
+                          .find_by(team_id: @profile.team_id)
+
+      reviewers = if studio_manager
+        [studio_manager]
+      else
+        @profile.company.company_memberships
+          .active
+          .where(role: %w[hr_admin super_admin])
+          .includes(:user)
       end
 
       reviewers.each do |m|

@@ -6,10 +6,19 @@ module Admin
       actions = []
 
       # Leave requests — high priority
-      LeaveRequest
+      is_team_manager = @current_membership&.team_manager?
+
+      leave_scope = LeaveRequest
         .joins(employee_profile: :company_membership)
         .where(company_memberships: { company_id: @current_company.id })
-        .pending
+
+      leave_scope = if is_team_manager
+        leave_scope.where(employee_profiles: { team_id: @current_membership.team_id }).pending
+      else
+        leave_scope.where(status: %w[pending manager_approved])
+      end
+
+      leave_scope
         .includes(:leave_type, employee_profile: { company_membership: :user })
         .order(created_at: :asc)
         .each do |r|
@@ -22,8 +31,12 @@ module Admin
             sub:          "#{r.start_date.strftime("%-d %b")} – #{r.end_date.strftime("%-d %b %Y")}",
             time:         r.created_at,
             approvable:   true,
-            approve_path: approve_admin_leave_request_path(@current_company.slug, r),
-            decline_path: decline_admin_leave_request_path(@current_company.slug, r)
+            approve_path: is_team_manager ?
+                            approve_manager_leave_request_path(@current_company.slug, r) :
+                            approve_admin_leave_request_path(@current_company.slug, r),
+            decline_path: is_team_manager ?
+                            decline_manager_leave_request_path(@current_company.slug, r) :
+                            decline_admin_leave_request_path(@current_company.slug, r)
           }
         end
 

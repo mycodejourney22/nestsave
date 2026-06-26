@@ -60,6 +60,17 @@ module Employee
       @recent_transactions = @current_membership.transactions
                                .order(created_at: :desc)
                                .limit(5)
+
+      # Team manager — pending leave requests awaiting their review
+      if @current_membership.team_manager?
+        @team_pending_leave_requests = LeaveRequest
+          .joins(employee_profile: :company_membership)
+          .where(company_memberships: { company_id: @current_company.id })
+          .where(employee_profiles: { team_id: @current_membership.team_id })
+          .pending
+          .includes(:leave_type, employee_profile: { company_membership: :user })
+          .order(requested_at: :asc)
+      end
     end
   end
 end

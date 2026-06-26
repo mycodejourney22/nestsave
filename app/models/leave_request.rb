@@ -4,14 +4,17 @@ class LeaveRequest < ApplicationRecord
   belongs_to :leave_balance, optional: true
   belongs_to :reviewer, class_name: "User",
              foreign_key: :reviewed_by, optional: true
+  belongs_to :manager_reviewer, class_name: "User",
+             foreign_key: :manager_reviewed_by, optional: true
 
-  STATUSES = %w[pending approved declined cancelled].freeze
+  STATUSES = %w[pending manager_approved approved declined cancelled].freeze
 
   enum :status, {
-    pending:   "pending",
-    approved:  "approved",
-    declined:  "declined",
-    cancelled: "cancelled"
+    pending:          "pending",
+    manager_approved: "manager_approved",
+    approved:         "approved",
+    declined:         "declined",
+    cancelled:        "cancelled"
   }
 
   validates :start_date, :end_date, :total_days, presence: true
@@ -53,7 +56,7 @@ class LeaveRequest < ApplicationRecord
   def no_overlapping_requests
     return unless start_date && end_date
     overlapping = employee_profile.leave_requests
-      .where(status: %w[pending approved])
+      .where(status: %w[pending manager_approved approved])
       .where.not(id: id)
       .where("start_date <= ? AND end_date >= ?", end_date, start_date)
     errors.add(:base, "You already have a leave request for this period") if overlapping.exists?

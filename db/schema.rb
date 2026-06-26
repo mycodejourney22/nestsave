@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_23_211902) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_26_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pgcrypto"
   enable_extension "plpgsql"
@@ -249,6 +249,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_23_211902) do
     t.datetime "reviewed_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.uuid "manager_reviewed_by"
+    t.datetime "manager_reviewed_at"
     t.index ["employee_profile_id"], name: "index_leave_requests_on_employee_profile_id"
     t.index ["leave_balance_id"], name: "index_leave_requests_on_leave_balance_id"
     t.index ["leave_type_id"], name: "index_leave_requests_on_leave_type_id"
@@ -510,6 +512,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_23_211902) do
   add_foreign_key "leave_requests", "employee_profiles"
   add_foreign_key "leave_requests", "leave_balances"
   add_foreign_key "leave_requests", "leave_types"
+  add_foreign_key "leave_requests", "users", column: "manager_reviewed_by"
   add_foreign_key "leave_requests", "users", column: "reviewed_by"
   add_foreign_key "leave_types", "companies"
   add_foreign_key "notifications", "companies"
