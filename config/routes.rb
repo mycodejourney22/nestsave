@@ -83,6 +83,8 @@ Rails.application.routes.draw do
 
       resources :leave_requests, only: [:index] do
         member do
+          get   :approve_form
+          get   :decline_form
           patch :approve
           patch :decline
         end

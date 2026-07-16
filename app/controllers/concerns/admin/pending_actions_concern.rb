@@ -33,10 +33,10 @@ module Admin
             approvable:   true,
             approve_path: is_team_manager ?
                             approve_manager_leave_request_path(@current_company.slug, r) :
-                            approve_admin_leave_request_path(@current_company.slug, r),
+                            approve_form_admin_leave_request_path(@current_company.slug, r),
             decline_path: is_team_manager ?
                             decline_manager_leave_request_path(@current_company.slug, r) :
-                            decline_admin_leave_request_path(@current_company.slug, r)
+                            decline_form_admin_leave_request_path(@current_company.slug, r)
           }
         end
 

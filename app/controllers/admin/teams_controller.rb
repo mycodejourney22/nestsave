@@ -73,7 +73,11 @@ module Admin
       return if membership_id.blank?
 
       membership = @current_company.company_memberships.active.find(membership_id)
-      membership.update!(team_id: team.id, role: :team_manager)
+      if membership.employee?
+        membership.update!(team_id: team.id, role: :team_manager)
+      else
+        membership.update!(team_id: team.id)
+      end
     end
   end
 end

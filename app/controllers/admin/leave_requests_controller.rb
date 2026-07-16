@@ -1,7 +1,7 @@
 module Admin
   class LeaveRequestsController < ApplicationController
     before_action :require_hr!
-    before_action :set_request, only: [:approve, :decline]
+    before_action :set_request, only: [:approve_form, :decline_form, :approve, :decline]
 
     def index
       base = LeaveRequest
@@ -13,6 +13,12 @@ module Admin
       @recent_requests  = base.where(status: %w[approved declined cancelled])
                               .order(updated_at: :desc)
                               .limit(50)
+    end
+
+    def approve_form
+    end
+
+    def decline_form
     end
 
     def approve
