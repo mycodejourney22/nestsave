@@ -32,8 +32,7 @@ class LeaveRequest < ApplicationRecord
 
   def calculate_total_days
     return unless start_date && end_date
-    days = (start_date..end_date).count { |d| !d.saturday? && !d.sunday? }
-    self.total_days = days
+    self.total_days = (end_date - start_date).to_i + 1
   end
 
   def requires_balance?
