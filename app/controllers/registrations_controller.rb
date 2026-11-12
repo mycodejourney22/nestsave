@@ -12,6 +12,17 @@ class RegistrationsController < ApplicationController
     @company = Company.new(company_params)
     @user    = User.new(user_params)
 
+    client_ip = ClientIp.call(request)
+    guard     = SignupGuard.new(params: params, remote_ip: client_ip).call
+    if guard.failure?
+      Rails.logger.warn(
+        "[SignupGuard] rejected reason=#{guard.error.reason} " \
+        "ip=#{client_ip} email=#{@user.email.inspect}"
+      )
+      flash.now[:alert] = guard.error.message
+      return render :new, status: :unprocessable_entity
+    end
+
     ActiveRecord::Base.transaction do
       @user.save!
       @company.save!

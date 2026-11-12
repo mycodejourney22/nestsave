@@ -4,6 +4,7 @@ class OnboardingNudgeJob < ApplicationJob
   def perform(user_id)
     user = User.find_by(id: user_id)
     return unless user
+    return if user.deleted_at.present?
 
     company = user.companies.first
     return unless company

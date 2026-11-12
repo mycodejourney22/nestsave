@@ -10,7 +10,8 @@
 #     policy.font_src    :self, :https, :data
 #     policy.img_src     :self, :https, :data
 #     policy.object_src  :none
-#     policy.script_src  :self, :https
+#     policy.script_src  :self, :https  # must allow https://challenges.cloudflare.com (Turnstile on /register)
+#     policy.frame_src   :self, "https://challenges.cloudflare.com"  # Turnstile widget iframe
 #     policy.style_src   :self, :https
 #     # Specify URI for violation reports
 #     # policy.report_uri "/csp-violation-report-endpoint"

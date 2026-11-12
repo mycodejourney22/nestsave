@@ -21,6 +21,13 @@
     <%= render "shared/flash" %>
 
     <%= form_with url: registration_path, method: :post, local: false, data: { turbo: false } do |f| %>
+      <%= hidden_field_tag :form_token, SignupGuard.issue_form_token, id: nil %>
+
+      <%# Honeypot — hidden from humans and assistive tech; bots tend to fill it. %>
+      <div aria-hidden="true" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;">
+        <label for="signup_website">Website</label>
+        <input type="text" name="website" id="signup_website" value="" tabindex="-1" autocomplete="off">
+      </div>
 
       <%# ── Company details ─────────────────────────────────────────────── %>
       <div class="mb-7">
@@ -141,6 +148,13 @@
           </div>
         </div>
       </div>
+
+      <% if SignupGuard.turnstile_enabled? %>
+        <div class="mb-5 flex justify-center">
+          <div class="cf-turnstile" data-sitekey="<%= SignupGuard.turnstile_site_key %>"></div>
+        </div>
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+      <% end %>
 
       <%= submit_tag "Create company & sign in",
             class: "w-full bg-primary-500 hover:bg-primary-600 text-white font-semibold py-3 px-6 rounded-xl text-sm transition-colors cursor-pointer" %>

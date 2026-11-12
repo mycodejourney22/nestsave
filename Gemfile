@@ -26,8 +26,8 @@ gem "stimulus-rails"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 gem "jbuilder"
 
-# Use Redis adapter to run Action Cable in production
-# gem "redis", ">= 4.0.1"
+# Redis client (used by Rack::Attack's cache store)
+gem "redis", ">= 4.0.1"
 
 # Use Kredis to get higher-level data types in Redis [https://github.com/rails/kredis]
 # gem "kredis"
@@ -46,6 +46,9 @@ gem "pundit", "~> 2.3"
 gem "sidekiq", "~> 7.2"
 gem "sidekiq-scheduler", "~> 5.0"
 gem "ostruct"
+
+# Rate limiting / bot protection
+gem "rack-attack", "~> 6.7"
 
 # Utilities
 gem "pagy", "~> 8.0"
@@ -74,6 +77,8 @@ group :development do
 end
 
 group :test do
+  # Rails 7.1's test runner is incompatible with Minitest 6
+  gem "minitest", "~> 5.25"
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"
   gem "selenium-webdriver"

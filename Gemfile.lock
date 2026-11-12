@@ -163,9 +163,7 @@ GEM
       mime-types-data (~> 3.2025, >= 3.2025.0507)
     mime-types-data (3.2026.0414)
     mini_mime (1.1.5)
-    minitest (6.0.4)
-      drb (~> 2.0)
-      prism (~> 1.5)
+    minitest (5.27.0)
     msgpack (1.8.0)
     mutex_m (0.3.0)
     net-imap (0.6.3)
@@ -224,6 +222,8 @@ GEM
     raabro (1.4.0)
     racc (1.8.1)
     rack (3.2.6)
+    rack-attack (6.8.0)
+      rack (>= 1.0, < 4)
     rack-session (2.1.2)
       base64 (>= 0.1.0)
       rack (>= 3.0.0)
@@ -267,7 +267,9 @@ GEM
       erb
       psych (>= 4.0.0)
       tsort
-    redis-client (0.28.0)
+    redis (6.0.0)
+      redis-client (= 0.30.1)
+    redis-client (0.30.1)
       connection_pool
     regexp_parser (2.12.0)
     reline (0.6.3)
@@ -349,13 +351,16 @@ DEPENDENCIES
   devise (~> 4.9)
   importmap-rails
   jbuilder
+  minitest (~> 5.25)
   ostruct
   pagy (~> 8.0)
   pg (~> 1.1)
   propshaft
   puma (>= 5.0)
   pundit (~> 2.3)
+  rack-attack (~> 6.7)
   rails (~> 7.1.5, >= 7.1.5.1)
+  redis (>= 4.0.1)
   selenium-webdriver
   sidekiq (~> 7.2)
   sidekiq-scheduler (~> 5.0)
